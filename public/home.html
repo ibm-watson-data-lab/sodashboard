@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SO Duty</title>
+
+  <!-- bootstrap -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+ 
+  <!-- our css -->
+ <link rel="stylesheet" href="css/soduty.css">
+</head>
+<body>
+  <div id="app">
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a v-on:click="mode='startup'" class="navbar-brand" href="#">SO Duty</a>
+
+          <div id="syncStatus">
+            <span v-if="syncInProgress">
+              <span class="glyphicon glyphicon-flash" aria-hidden="true"></span>
+            </span>
+            <span v-if="syncError">
+              <span class="glyphicon glyphicon-error" aria-hidden="true"></span>
+            </span>
+            <span v-if="syncComplete">
+              <span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 
+            </span>
+            <span class="badge" v-if="numDocs">{{ numDocs }}</span>
+          </div> <!--syncStatus -->
+
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <div id="loggedinuser" class="navbar-right" v-if="loggedinuser">
+            <a v-on:click="profileEditor" href="#profile">
+              <span class="glyphicon glyphicon-user" aria-hidden="true"></span> <span>{{ loggedinuser.user_name }}</span>
+            </a>
+          </div>
+        </div><!--/.navbar-collapse -->
+      </div>
+    </nav>
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div v-if="mode==='startup'" class="jumbotron">
+      <div class="container">
+        <h1>Welcome to Stack Overflow duty</h1>
+        <p></p>
+        <p><a class="btn btn-primary btn-lg" href="#" role="button">Learn more &raquo;</a></p>
+      </div>
+    </div>
+
+    <div v-if="mode==='startup'" class="container">
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="col-md-4">
+          <h2>My Tickets</h2>
+          <p>See a list of tickets assigned to you that don't yet have an answer.</p>
+          <p><a v-on:click="myTickets" class="btn btn-default" href="#" role="button">My Tickets &raquo;</a></p>
+        </div>
+        <div class="col-md-4">
+          <h2>Unassigned tickets</h2>
+          <p>If you are on Stack Overflow triage duty, then this is where you can find the tickets that need a home.</p>
+          <p><a v-on:click="unAssignedTickets" class="btn btn-default" href="#" role="button">Unassigned tickets &raquo;</a></p>
+        </div>
+        <div class="col-md-4">
+          <h2>Heading</h2>
+          <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
+          <p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
+        </div>
+      </div>
+
+      <hr>
+
+      <footer>
+        <p>&copy; 2016 Company, Inc.</p>
+      </footer>
+    </div> <!-- /container -->
+
+    <!-- list of docments editor -->
+    <div v-if="mode==='unassigned' || mode === 'mytickets'" class="container">
+      <h2>{{ mode }} <span class="badge" v-if="numDocs">{{ docs.length }}</span></h2>
+      <table class="table">
+        <tr>
+          <th>question</th>
+          <th>tags</th>
+          <th>answers</th>
+          <th>assigned</th>
+          <th>rejected</th>
+        </tr>
+        <tr v-for="doc in sortedDocs" v-if="!doc.owner && !doc.rejected">
+          <td>
+            <a :href="doc.question.link" target="_new">{{ doc.question.title}}</a>
+          </td>
+          <td>
+            <span v-for="tag in doc.question.tags" class="label label-default tag">{{ tag }}</span>
+          </td>
+          <td>
+            {{ doc.question.answer_count }}
+          </td>
+          <td>
+            <select v-model="doc.owner">
+              <option value="">----</option>
+              <option v-for="(user, i) in userlist" :value="i">{{ user }}</option>
+            </select>
+          </td>
+          <td>
+            <input v-model="doc.rejected" type="checkbox">
+          </td>
+        </tr>
+      </table>
+    </div> <!--- container -->
+
+
+    <!-- profile editor -->
+    <div v-if="mode==='profile'" class="container">
+      <h2>Profile</h2>
+      <div class="form-group">
+        <label for="slackid">Slack ID</label>
+        <input v-model="profile.user_id" type="string" class="form-control" id="slackid" readonly >
+      </div>
+      <div class="form-group">
+        <label for="slackname">Slack name</label>
+        <input v-model="profile.user_name" type="string" class="form-control" id="slackname" readonly >
+      </div>
+      <div class="form-group">
+        <label for="soid">Stack Overflow ID</label>
+        <input v-model="profile.so_id" type="string" class="form-control" id="soid">
+      </div>
+      <button v-on:click="saveProfile" class="btn btn-default">Submit</button>
+    </div> <!-- container -->
+
+  </div> <!-- app -->
+
+  <!-- jQuery -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
+
+  <!-- PouchDB -->
+  <script src="https://cdn.jsdelivr.net/pouchdb/6.1.2/pouchdb.min.js"></script>
+
+  <!-- Bootstrap -->
+  <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+-->
+  <!-- Vue.js -->
+  <script src="https://unpkg.com/vue@2.2.6"></script>
+
+  <!-- Our JS -->
+  <script src="js/soduty.js"></script>
+
+</body>
+</html>

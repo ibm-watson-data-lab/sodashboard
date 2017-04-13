@@ -1,0 +1,31 @@
+<html>
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pouchdb/6.1.2/pouchdb.min.js"></script>
+</head> 
+<body>
+  <h4>Please wait while we log you in....</h4>
+  <script>
+
+    // extract the token from the URL
+    var token = window.location.search.replace(/^\?/,'');
+
+    // start up a 'soduty' database
+    var db = new PouchDB('soduty');
+
+    // redeem the token
+    var r = {
+      type: 'POST',
+      url: '/redeem/' + token,
+      success: function(data) {
+        // write the data to a local PouchDB database
+        data._id = '_local/user';
+        db.put(data).then(function () {
+          window.location = 'home.html';
+        });
+      }
+    };
+    $.ajax(r);
+  </script>
+</body>
+</html>

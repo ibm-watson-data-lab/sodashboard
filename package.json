@@ -1,0 +1,31 @@
+{
+  "name": "sodashboard",
+  "version": "0.0.0",
+  "description": "Stack Overflow Dashboard",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ibm-cds-labs/sodashboard.git"
+  },
+  "keywords": [
+    "stack-overflow",
+    "cloudant",
+    "dashboard"
+  ],
+  "author": "Glynn Bird <glynn.bird@gmail.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/ibm-cds-labs/sodashboard/issues"
+  },
+  "homepage": "https://github.com/ibm-cds-labs/sodashboard#readme",
+  "dependencies": {
+    "body-parser": "^1.17.1",
+    "cfenv": "^1.0.4",
+    "express": "^4.15.2",
+    "silverlining": "^1.23.2"
+  }
+}
