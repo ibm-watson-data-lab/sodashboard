@@ -1,5 +1,15 @@
 var db = new PouchDB('soduty');
 
+var locateDoc = function(id) {
+  for(var i in app.docs) {
+    var d = app.docs[i];
+    if (d._id === id) {
+      return d;
+    }
+  }
+  return null;
+};
+
 var app = new Vue({
   el: '#app',
   data: {
@@ -42,12 +52,12 @@ var app = new Vue({
       console.log('myTickets! for', app.loggedinuser._id );
       
       var map = function(doc) {
-        if (doc.question && !doc.rejected && doc.owner !== null) {
+        if (doc.question && (typeof doc.rejected === 'undefined' || doc.rejected === false) && doc.owner !== null) {
           emit(doc.owner, null);
         }
       };
       // get list of unassigned tickets, newest first
-      db.query(map, {/*key: app.loggedinuser._id, */include_docs:true}).then(function(data) {
+      db.query(map, {key: app.loggedinuser._id, include_docs:true}).then(function(data) {
         console.log('myTickets', data);
         app.docs = [];
         for(var i in data.rows) {
@@ -131,6 +141,32 @@ var app = new Vue({
       app.syncComplete = false;
       app.syncError = true;
       console.log('error', err);
+    },
+    assign: function(id) {
+      // find the doc that was rejected an update the database
+      var doc = locateDoc(id);
+      if (doc) {
+        doc.assigned = true;
+        doc.assigned_by = app.loggedinuser.user_id;
+        doc.assigned_by_name = app.loggedinuser.user_name;
+        doc.assigned_at = new Date().toISOString();
+        db.put(doc).then(function(reply) {
+          doc._rev = reply.rev;
+        });
+      }
+    },
+    reject: function(id) {
+      // find the doc that was rejected an update the database
+      var doc = locateDoc(id);
+      if (doc) {
+        doc.rejected = true;
+        doc.rejected_by = app.loggedinuser.user_id;
+        doc.rejected_by_name = app.loggedinuser.user_name;
+        doc.rejected_at = new Date().toISOString();
+        db.put(doc).then(function(reply) {
+          doc._rev = reply.rev;
+        });
+      }
     }
   }
 });

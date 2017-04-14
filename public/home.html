@@ -14,17 +14,18 @@
 </head>
 <body>
   <div id="app">
+
     <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
             <span class="sr-only">Toggle navigation</span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
           <a v-on:click="mode='startup'" class="navbar-brand" href="#">SO Duty</a>
-
           <div id="syncStatus">
             <span v-if="syncInProgress">
               <span class="glyphicon glyphicon-flash" aria-hidden="true"></span>
@@ -37,24 +38,36 @@
             </span>
             <span class="badge" v-if="numDocs">{{ numDocs }}</span>
           </div> <!--syncStatus -->
-
         </div>
-        <div id="navbar" class="navbar-collapse collapse">
-          <div id="loggedinuser" class="navbar-right" v-if="loggedinuser">
-            <a v-on:click="profileEditor" href="#profile">
-              <span class="glyphicon glyphicon-user" aria-hidden="true"></span> <span>{{ loggedinuser.user_name }}</span>
-            </a>
-          </div>
-        </div><!--/.navbar-collapse -->
-      </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+            <li><a v-on:click="myTickets" href="#">Mine</a></li>
+            <li><a v-on:click="unAssignedTickets" href="#">Unassigned</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li>          
+              <div id="loggedinuser" v-if="loggedinuser">
+                <a v-on:click="profileEditor" href="#profile">
+                  <span class="glyphicon glyphicon-user" aria-hidden="true"></span> <span>{{ loggedinuser.user_name }}</span>
+                </a>
+              </div>
+            </li>
+          </ul>
+        </div><!-- /.navbar-collapse -->
+      </div><!-- /.container-fluid -->
     </nav>
+
+
+
 
     <!-- Main jumbotron for a primary marketing message or call to action -->
     <div v-if="mode==='startup'" class="jumbotron">
       <div class="container">
         <h1>Welcome to Stack Overflow duty</h1>
         <p></p>
-        <p><a class="btn btn-primary btn-lg" href="#" role="button">Learn more &raquo;</a></p>
+        <p><!--<a class="btn btn-primary btn-lg" href="#" role="button">Learn more &raquo;</a>--></p>
       </div>
     </div>
 
@@ -81,7 +94,7 @@
       <hr>
 
       <footer>
-        <p>&copy; 2016 Company, Inc.</p>
+        <p>&copy; 2017 IBM Watson Data Platform</p>
       </footer>
     </div> <!-- /container -->
 
@@ -92,19 +105,16 @@
         <tr>
           <th>question</th>
           <th>tags</th>
-          <th>answers</th>
-          <th>assigned</th>
-          <th>rejected</th>
+          <th></th>
+          <th></th>
         </tr>
-        <tr v-for="doc in sortedDocs" v-if="!doc.owner && !doc.rejected">
+        <tr v-for="doc in sortedDocs" v-if="mode==='mytickets' || (mode==='unassigned' && !doc.assigned && !doc.rejected)">
           <td>
             <a :href="doc.question.link" target="_new">{{ doc.question.title}}</a>
+            <span class="badge">{{ doc.question.answer_count }}</span>
           </td>
           <td>
             <span v-for="tag in doc.question.tags" class="label label-default tag">{{ tag }}</span>
-          </td>
-          <td>
-            {{ doc.question.answer_count }}
           </td>
           <td>
             <select v-model="doc.owner">
@@ -113,7 +123,10 @@
             </select>
           </td>
           <td>
-            <input v-model="doc.rejected" type="checkbox">
+            <button class="btn btn-default" v-on:click="assign(doc._id)">Assign</button>
+          </td>
+          <td>
+            <button class="btn btn-default" v-on:click="reject(doc._id)">Reject</button>
           </td>
         </tr>
       </table>
