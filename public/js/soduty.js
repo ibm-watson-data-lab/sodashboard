@@ -21,19 +21,34 @@ var app = new Vue({
     profile: null,
     syncInProgress: false,
     syncError: false,
-    syncComplete: false
+    syncComplete: false,
+    filterTags: []
   },
   computed: {
     sortedDocs: function () {
+      // get the app.docs but with tags sorted into order
       for(var i in this.docs) {
         this.docs[i].question.tags = this.docs[i].question.tags.sort();
       }
       return this.docs;
+    },
+    distinctTags: function() {
+      // get distinct list of tags from tickets in the list
+      var obj = {};
+      for(var i in this.docs) {
+        for(var j in this.docs[i].question.tags) {
+          var tag = this.docs[i].question.tags[j];
+          obj[tag] = true;
+        }
+      }
+      return Object.keys(obj).sort();
     }
   },
   methods: {
     profileEditor: function() {
+      // load the user profile
       db.get(app.loggedinuser._id).then(function(data) {
+        // enable the profile editor
         app.profile = data;
         app.mode = 'profile';
         window.location.hash = '#profile';
@@ -42,15 +57,14 @@ var app = new Vue({
     saveProfile: function() {
       // save the profile to PouchDB
       db.put(app.profile).then(function(data) {
-        console.log(data);
+        // return to startup mode
         app.profile._rev = data.rev;
         app.mode = 'startup';
         window.location.hash = '#';
       });
     },
     myTickets: function() {
-      console.log('myTickets! for', app.loggedinuser._id );
-      
+     // load tickets assigned to me  
       var map = function(doc) {
         if (doc.question && (typeof doc.rejected === 'undefined' || doc.rejected === false) && doc.owner !== null) {
           emit(doc.owner, null);
@@ -58,7 +72,6 @@ var app = new Vue({
       };
       // get list of unassigned tickets, newest first
       db.query(map, {key: app.loggedinuser._id, include_docs:true}).then(function(data) {
-        console.log('myTickets', data);
         app.docs = [];
         for(var i in data.rows) {
           app.docs.push(data.rows[i].doc);
@@ -68,8 +81,7 @@ var app = new Vue({
       });
     },
     unAssignedTickets: function() {
-      console.log('unAssignedTickets!');
-      
+      // load unassigned tickets
       var map = function(doc) {
         if (!doc.rejected && doc.owner === null) {
           emit(doc.question.creation_date, null);
@@ -87,19 +99,22 @@ var app = new Vue({
       });
     },
     onSyncChange: function(change) {
+      // when we receive notification of a change
       app.syncInProgress = true;
       app.syncComplete = false;
-      console.log('change', change);
+
+      // if it's an incoming change (rather than us sending one to the cloud)
       if (change.direction === 'pull') {
-        console.log('change', 'it is a pull')
+        
+        // for each change
         var inTheList = false;
         for (var i in change.change.docs) {
           var d = change.change.docs[i];
-          console.log('changed doc', d);
-          // see if it's already in the docs
+          
+          // see if the document id that is changing is on our app.docs list
           for (var j in app.docs) {
             if (app.docs[j]._id === d._id) {
-              console.log('we have match in the list!', d._id)
+              // overwrite our copy with the one that has changed
               app.docs[j] = d;
               inTheList = true;
               break;
@@ -108,7 +123,7 @@ var app = new Vue({
 
           // if we have a new unassigned ticket and we're in unassigned mode
           if (!intheList && app.mode === 'unassigned' && d.owner === null && d.status === 'new') {
-            console.log('we have a brand new unassigned ticket', d._id);
+            // add it to the top of our list
             app.docs.unshift(d);
           }
         }
@@ -118,8 +133,12 @@ var app = new Vue({
     onSyncPaused: function(err) {
       app.syncComplete = true;
       app.syncInProgress = false;
+
+      // load the doc count
       db.info().then(function(data) {
         app.numDocs = data.doc_count;
+
+        // get a list of users
         var map = function(doc) {
           if (doc.type && doc.type === 'user') {
             emit(doc.user_name, null);
@@ -134,15 +153,16 @@ var app = new Vue({
         }
         app.userlist = userlist;
       });
-      console.log('paused', err);
     },
     onSyncError: function(err) {
+      // sync error
       app.syncInProgress = false;
       app.syncComplete = false;
       app.syncError = true;
       console.log('error', err);
     },
     assign: function(id) {
+      // called when someone clicks the assign button
       // find the doc that was rejected an update the database
       var doc = locateDoc(id);
       if (doc) {
@@ -156,6 +176,7 @@ var app = new Vue({
       }
     },
     reject: function(id) {
+      // called when someone calls the reject button
       // find the doc that was rejected an update the database
       var doc = locateDoc(id);
       if (doc) {
@@ -197,7 +218,7 @@ db.get('_local/user').then(function(data) {
       app.myTickets();
     }
   }
-  console.log(window.location)
+
 }).catch(function(e) {
   // if there's no _local/user document, you're not logged in
   window.location = 'index.html';
