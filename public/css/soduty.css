@@ -25,3 +25,8 @@ body {
 .tag {
   margin-right:5px;
 }
+
+.owner:link {
+  color: #666;
+  font-size: 10px;
+}
