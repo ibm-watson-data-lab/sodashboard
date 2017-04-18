@@ -104,6 +104,7 @@
       <table class="table">
         <tr>
           <th>question</th>
+          <th></th>
           <th>tags</th>
           <th></th>
           <th></th>
@@ -111,6 +112,8 @@
         <tr v-for="doc in sortedDocs" v-if="mode==='mytickets' || (mode==='unassigned' && !doc.assigned && !doc.rejected)">
           <td>
             <a :href="doc.question.link" target="_new">{{ doc.question.title}}</a>
+          </td>
+          <td>
             <span class="badge">{{ doc.question.answer_count }}</span>
           </td>
           <td>
@@ -149,6 +152,8 @@
         <input v-model="profile.so_id" type="string" class="form-control" id="soid">
       </div>
       <button v-on:click="saveProfile" class="btn btn-default">Submit</button>
+      <hr />
+      <button v-on:click="logout" class="btn btn-danger">Logout</button>
     </div> <!-- container -->
 
   </div> <!-- app -->

@@ -188,6 +188,11 @@ var app = new Vue({
           doc._rev = reply.rev;
         });
       }
+    },
+    logout: function() {
+      db.destroy().then(function(data) {
+        window.location = 'index.html';
+      })
     }
   }
 });

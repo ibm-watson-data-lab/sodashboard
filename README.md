@@ -2,13 +2,24 @@
 
 This is a Bluemix Cloud-Foundry app that powers a Stack Overflow dashboard for the Dev Advocacy team.
 
+## Configuration
+
+Environment variables
+
+- CLOUDANT_URL - the url of your Cloudant instance e.g. https://USER:PASS@HOST.cloudant.com
+- CLOUDANT_DB - the name of the database e.g. so
+- SLACK_TOKEN - the Slack token or comma-separated list of tokens that are allowed for incoming webhooks to `POST /slack`
+
+You need to configure a Slack "slash command" to post to this app's `/slack` endpoint. This is the starting point for authentication.
+
 ## Authentication
 
-1) The user types `/soduty` in Slack. They are given a URL of the form `http://thisservice.mybluemix.net/login.html?asfafasaf`
-2) When the user follows the URL, the token is validated and if it checks out the web page is supplied with Cloudant
+1) The user types `/soduty` in Slack, Slack makes a POST to this app's `/slack` endpoint.
+2) Ths slack user is given a URL of the form `http://thisservice.mybluemix.net/login.html?asfafasaf`
+3) When the user follows the URL, the token is validated and if it checks out the web page is supplied with Cloudant
 authentication credentials and the details of the user that is logging in.
-3) The web page creates a local, in-browser database using PouchDB storing `_local/user` document containing the Cloudant credentials and details of the logged-in user
-4) The user is bounced to the `home.html` page - the main page of this web app
+4) The web page creates a local, in-browser database using PouchDB storing `_local/user` document containing the Cloudant credentials and details of the logged-in user
+5) The user is bounced to the `home.html` page - the main page of this web app
 
 ## The web app
 

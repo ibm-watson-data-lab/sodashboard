@@ -46,7 +46,7 @@ app.post('/slack', function (req, res) {
 
     // create token containing the Slack request
     var doc = req.body;
-    doc.ts = new Date().getTime() + 60*5;
+    doc.ts = new Date().getTime()/1000 + 60*5;
 
     // put it into Cloudant
     db.tokens.insert(doc).then(function(data) {
@@ -69,14 +69,23 @@ app.post('/redeem/:id', function (req, res) {
   // fetch the token from the database
   db.tokens.get(req.params.id).then(function(data) {
 
+    // tokens only last five minutes
+    var now = new Date().getTime()/1000;
+    if (data.ts &&  data.ts < now) {
+      throw(new Error('token out of date'));
+    }
+
     // create a user (or update an existing one)
     data._id = data.user_id;
     data.type = 'user';
     user = data;
 
-    // merge in this data if necessary - other keys in the document will remain intact
-    return db.so.update(data, true); 
+    // delete the token
+    return db.tokens.del(req.params.id);
 
+  }).then(function(d) {
+    // merge in this user data if necessary - other keys in the document will remain intact
+    return db.so.update(user, true); 
   }).then(function(data) {
 
     // create a new Cloudant apikey/password 
@@ -84,9 +93,10 @@ app.post('/redeem/:id', function (req, res) {
   }).then(function(newUser) {
     
     // pass the Cloudant URL, username, password and user data back to the caller
-    return res.send({ url: db.url , username: newUser.key, password: newUser.password, ok: true, user: user });
+    return res.send({ url: db.url, username: newUser.key, password: newUser.password, ok: true, user: user });
   }).catch(function(e) {
-    res.status(400);
+    console.log('Error', e);
+    res.status(400).end();
   });
 });
 
