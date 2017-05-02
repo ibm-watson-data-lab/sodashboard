@@ -1,4 +1,4 @@
-var db = new PouchDB('soduty');
+var db = new PouchDB('sodashboard');
 
 var locateDoc = function(id) {
   for(var i in app.docs) {

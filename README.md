@@ -1,4 +1,4 @@
-# sodashboard
+# §ashboard
 
 This is a Bluemix Cloud-Foundry app that powers a Stack Overflow dashboard for the Dev Advocacy team.
 
@@ -14,7 +14,7 @@ You need to configure a Slack "slash command" to post to this app's `/slack` end
 
 ## Authentication
 
-1) The user types `/soduty` in Slack, Slack makes a POST to this app's `/slack` endpoint.
+1) The user types `/sodashboard` in Slack, Slack makes a POST to this app's `/slack` endpoint.
 2) Ths slack user is given a URL of the form `http://thisservice.mybluemix.net/login.html?asfafasaf`
 3) When the user follows the URL, the token is validated and if it checks out the web page is supplied with Cloudant
 authentication credentials and the details of the user that is logging in.

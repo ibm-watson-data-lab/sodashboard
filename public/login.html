@@ -11,10 +11,10 @@
     // extract the token from the URL
     var token = window.location.search.replace(/^\?/,'');
 
-    // start up a 'soduty' database
-    var db = new PouchDB('soduty');
+    // start up a 'sodashboard' database
+    var db = new PouchDB('sodashboard');
     db.destroy(function() {
-      db = new PouchDB('soduty');
+      db = new PouchDB('sodashboard');
       // redeem the token
       var r = {
         type: 'POST',
