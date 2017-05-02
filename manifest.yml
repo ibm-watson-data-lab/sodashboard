@@ -1,0 +1,8 @@
+- name: sodashboard
+  memory: 512M
+  instances: 1
+  domain: mybluemix.net
+  disk_quota: 512M
+  command: node index.js
+  path: .
+  services:

@@ -27,5 +27,8 @@
     "cfenv": "^1.0.4",
     "express": "^4.15.2",
     "silverlining": "^1.23.2"
-  }
+  },
+  "engines": {
+    "node": ">=4.2.0"
+  },
 }
