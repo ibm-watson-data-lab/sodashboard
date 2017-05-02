@@ -1,3 +1,4 @@
+applications:
 - name: sodashboard
   memory: 512M
   instances: 1
