@@ -7,7 +7,7 @@ This is a Bluemix Cloud-Foundry app that powers a Stack Overflow dashboard for t
 Environment variables
 
 - CLOUDANT_URL - the url of your Cloudant instance e.g. https://USER:PASS@HOST.cloudant.com
-- CLOUDANT_DB - the name of the database e.g. so
+- CLOUDANT_DB - the name of the database e.g. questions
 - SLACK_TOKEN - the Slack token or comma-separated list of tokens that are allowed for incoming webhooks to `POST /slack`
 
 You need to configure a Slack "slash command" to post to this app's `/slack` endpoint. This is the starting point for authentication.
