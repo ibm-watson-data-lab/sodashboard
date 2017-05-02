@@ -5,4 +5,3 @@
   disk_quota: 512M
   command: node index.js
   path: .
-  services:
