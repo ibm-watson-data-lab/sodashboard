@@ -1,4 +1,4 @@
-# §ashboard
+# sodashboard
 
 This is a Bluemix Cloud-Foundry app that powers a Stack Overflow dashboard for the Dev Advocacy team.
 
@@ -47,7 +47,7 @@ The user can also edit their own user profile, adding their Stack Overflow detai
 
 Contains the token documents which are used to store intermediate data during the authentication process.
 
-### Questions database - `so`
+### Questions database - `questions`
 
 Another project already populates a Cloudant database with Stack Overflow questions that need answering. This project
 connects to that database.
