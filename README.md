@@ -91,4 +91,3 @@ Our meta data is stored at the top level of the document:
 - type - identifies the type of document: `question` / `user`
 - owner - which user id the question has been assigned to: default `null` meaning unassigned
 - status - the status of the document: `new` / `updated`. 
-
