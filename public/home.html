@@ -109,7 +109,7 @@
           <th></th>
           <th></th>
         </tr>
-        <tr v-for="doc in sortedDocs" v-if="mode==='mytickets' || (mode==='unassigned' && !doc.assigned && !doc.rejected)">
+        <tr v-for="doc in sortedDocs">
           <td>
             <a :href="doc.question.link" target="_new">{{ doc.question.title}}</a> <br />
             <a class="owner" :href="doc.question.owner.link" target="_new">{{ doc.question.owner.display_name }} ({{ doc.question.owner.reputation }})</a>

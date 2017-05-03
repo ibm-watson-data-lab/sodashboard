@@ -171,13 +171,19 @@ var app = new Vue({
         doc.assigned_by_name = app.loggedinuser.user_name;
         doc.assigned_at = new Date().toISOString();
         db.put(doc).then(function(reply) {
-          doc._rev = reply.rev;
+          if (app.mode === 'mytickets' && doc.owner !== app.loggedinuser.user_id) {
+            app.removeFromList(doc._id);
+          } else if (app.mode === 'unassigned') {
+            app.removeFromList(doc._id);
+          } else {
+            doc._rev = reply.rev;
+          }
         });
       }
     },
     reject: function(id) {
       // called when someone calls the reject button
-      // find the doc that was rejected an update the database
+      // find the doc that was rejected and update the database
       var doc = locateDoc(id);
       if (doc) {
         doc.rejected = true;
@@ -186,7 +192,17 @@ var app = new Vue({
         doc.rejected_at = new Date().toISOString();
         db.put(doc).then(function(reply) {
           doc._rev = reply.rev;
+          app.removeFromList(id);
         });
+      }
+    },
+    removeFromList: function(id) {
+      for (var j in app.docs) {
+        if (app.docs[j]._id === id) {
+          console.log('Removed', id);
+          app.docs.splice(j, 1);
+          break;
+        }
       }
     },
     logout: function() {
