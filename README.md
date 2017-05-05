@@ -1,6 +1,6 @@
 # sodashboard
 
-This is a Bluemix Cloud-Foundry app that powers a Stack Overflow dashboard for the Dev Advocacy team.
+This is a Bluemix Cloud-Foundry app that powers a Stack Overflow dashboard for the Dev Advocacy team. It is deployed automatically via a Bluemix continuous integration pipeline. Simple create a PR and if it's accepted and merged into the 'master' branch, it will be deployed.
 
 ## Configuration
 
@@ -16,7 +16,7 @@ You need to configure a Slack "slash command" to post to this app's `/slack` end
 
 1) The user types `/sodashboard` in Slack, Slack makes a POST to this app's `/slack` endpoint.
 2) Ths slack user is given a URL of the form `http://thisservice.mybluemix.net/login.html?asfafasaf`
-3) When the user follows the URL, the token is validated and if it checks out the web page is supplied with Cloudant
+3) When the user follows the URL, the token is validated and if it checks out, the web page is supplied with Cloudant
 authentication credentials and the details of the user that is logging in.
 4) The web page creates a local, in-browser database using PouchDB storing `_local/user` document containing the Cloudant credentials and details of the logged-in user
 5) The user is bounced to the `home.html` page - the main page of this web app
@@ -91,3 +91,35 @@ Our meta data is stored at the top level of the document:
 - type - identifies the type of document: `question` / `user`
 - owner - which user id the question has been assigned to: default `null` meaning unassigned
 - status - the status of the document: `new` / `updated`. 
+
+#### Assignment
+
+When a question is assigned to another user, the following top-level attributes are added to the doc:
+
+```js
+{
+  ...
+  "owner": "U0988EU",
+	"assigned": true,
+	"assigned_by": "U0Z2VN3EU",
+	"assigned_by_name": "glynn.bird",
+	"assigned_at": "2017-04-14T07:37:56.509Z"
+  ...
+}
+```
+
+#### Answered
+
+When an a user affirms that they have answered a question, the following top-level attributes are added to the doc:
+
+```js
+{
+  ...
+	"answered": true,
+	"answered_by": "U0Z2VN3EU",
+	"answered_by_name": "glynn.bird",
+	"answered_at": "2017-05-05T15:46:54.083Z",
+  ...
+}
+```
+
