@@ -132,6 +132,9 @@
           <td>
             <button class="btn btn-default" v-on:click="reject(doc._id)">Reject</button>
           </td>
+          <td v-if="mode=='mytickets'">
+            <button class="btn btn-success" v-on:click="answered(doc._id)">Answered</button>
+          </td>
         </tr>
       </table>
     </div> <!--- container -->

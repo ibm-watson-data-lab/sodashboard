@@ -66,7 +66,10 @@ var app = new Vue({
     myTickets: function() {
      // load tickets assigned to me  
       var map = function(doc) {
-        if (doc.question && (typeof doc.rejected === 'undefined' || doc.rejected === false) && doc.owner !== null) {
+        if (doc.question && 
+             (typeof doc.rejected === 'undefined' || doc.rejected === false) && 
+             (typeof doc.answered === 'undefined' || doc.answered === false) &&
+             doc.owner !== null) {
           emit(doc.owner, null);
         }
       };
@@ -190,6 +193,21 @@ var app = new Vue({
         doc.rejected_by = app.loggedinuser.user_id;
         doc.rejected_by_name = app.loggedinuser.user_name;
         doc.rejected_at = new Date().toISOString();
+        db.put(doc).then(function(reply) {
+          doc._rev = reply.rev;
+          app.removeFromList(id);
+        });
+      }
+    },
+    answered: function(id) {
+      // called when someone hits the answered button
+      // find the doc that was answered and update the database
+      var doc = locateDoc(id);
+      if (doc) {
+        doc.answered = true;
+        doc.answered_by = app.loggedinuser.user_id;
+        doc.answered_by_name = app.loggedinuser.user_name;
+        doc.answered_at = new Date().toISOString();
         db.put(doc).then(function(reply) {
           doc._rev = reply.rev;
           app.removeFromList(id);
