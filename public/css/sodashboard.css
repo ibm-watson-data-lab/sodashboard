@@ -34,3 +34,7 @@ body {
 .answered {
   background-color: green
 }
+
+.rejected {
+  background-color: red
+}
