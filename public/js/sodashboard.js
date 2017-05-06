@@ -22,7 +22,7 @@ var app = new Vue({
     syncInProgress: false,
     syncError: false,
     syncComplete: false,
-    filterTags: []
+    search: ''
   },
   computed: {
     sortedDocs: function () {
@@ -227,6 +227,21 @@ var app = new Vue({
       db.destroy().then(function(data) {
         window.location = 'index.html';
       })
+    },
+    doSearch: function() {
+      console.log('search', app.search)
+      db.search({
+        query: app.search,
+        fields: ['question.title', 'question.tags'],
+        include_docs: true
+      }).then(function(data) {
+        app.docs = [];
+        for(var i in data.rows) {
+          app.docs.push(data.rows[i].doc);
+        }
+        app.mode = 'search';
+      });
+      
     }
   }
 });
