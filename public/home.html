@@ -123,21 +123,22 @@
           <td>
             <span class="badge">{{ doc.question.answer_count }}</span>
             <span v-if="doc.answered" class="badge answered"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></span>
+            <span v-if="doc.rejected" class="badge rejected"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></span>
           </td>
           <td>
             <span v-for="tag in doc.question.tags" class="label label-default tag">{{ tag }}</span>
           </td>
           <td>
-            <select v-model="doc.owner">
+            <select v-if="!doc.answered && !doc.rejected" v-model="doc.owner">
               <option value="">----</option>
               <option v-for="(user, i) in userlist" :value="i">{{ user }}</option>
             </select>
           </td>
           <td>
-            <button class="btn btn-default" v-on:click="assign(doc._id)">Assign</button>
+            <button v-if="!doc.answered && !doc.rejected" class="btn btn-default" v-on:click="assign(doc._id)">Assign</button>
           </td>
           <td>
-            <button class="btn btn-default" v-on:click="reject(doc._id)">Reject</button>
+            <button v-if="!doc.answered && !doc.rejected" class="btn btn-default" v-on:click="reject(doc._id)">Reject</button>
           </td>
           <td v-if="mode=='mytickets'">
             <button class="btn btn-success" v-on:click="answered(doc._id)">Answered</button>
