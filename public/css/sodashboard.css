@@ -30,3 +30,7 @@ body {
   color: #666;
   font-size: 10px;
 }
+
+.answered {
+  background-color: green
+}
