@@ -24,6 +24,7 @@ body {
 
 .tag {
   margin-right:5px;
+  white-space: normal
 }
 
 .owner:link {
@@ -37,4 +38,8 @@ body {
 
 .rejected {
   background-color: red
+}
+
+.datarow {
+  margin-bottom: 15px
 }
