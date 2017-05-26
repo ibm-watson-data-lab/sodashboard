@@ -58,7 +58,7 @@ app.post('/slack', function (req, res) {
       res.send(400);
     });
   } else {
-    res.status(403);
+    res.status(403).end();
   }
 });
 
