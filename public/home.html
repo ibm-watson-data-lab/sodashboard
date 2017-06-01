@@ -275,21 +275,26 @@
 
     <!-- profile editor -->
     <div v-if="mode==='profile'" class="container">
-      <div class="alert alert-info">
+      <div class="alert alert-info form-horizontal">
         <h2>Profile</h2>
         <div class="form-group">
-          <label for="slackid">Slack ID</label>
-          <input v-model="profile.user_id" type="string" class="form-control" id="slackid" readonly >
+          <label for="slackid" class="col-sm-3 control-label">Slack ID</label>
+          <div class="col-sm-9">
+            <input v-model="profile.user_id" type="string" class="form-control" id="slackid" readonly>
+          </div>
         </div>
         <div class="form-group">
-          <label for="slackname">Slack name</label>
-          <input v-model="profile.user_name" type="string" class="form-control" id="slackname" readonly >
+          <label for="slackname" class="col-sm-3 control-label">Slack name</label>
+          <div class="col-sm-9">
+            <input v-model="profile.user_name" type="string" class="form-control" id="slackname" readonly >
+          </div>
         </div>
         <div class="form-group">
-          <label for="soid">Stack Overflow ID</label>
-          <input v-model="profile.so_id" type="string" class="form-control" id="soid">
-          <p class="help-block">We need to know your Stack Overflow identity too. Enter the number that appears in 
-            your Stack Overflow profile URL so we can tell whether you have answered a question.
+          <label for="soid" class="col-sm-3 control-label">Stack Overflow ID</label>
+          <div class="col-sm-9">
+            <input v-model="profile.so_id" type="string" class="form-control" id="soid">
+          </div>
+          <p class="help-block col-sm-9 col-sm-offset-3">We need to know your Stack Overflow identity too. Enter the number that appears in your Stack Overflow profile URL so we can tell whether you have answered a question.
           </p>
         </div>
         <button v-on:click="saveProfile" class="btn btn-default">Submit</button>
@@ -299,10 +304,9 @@
 
       <div class="alert alert-danger">
         <h2>Logout</h2>
-        <div><b>Warning!</b> This will destroy your local copy of the Stack Overflow tickets and you
-             will have to log in again via Slack
-        </div>
-        <button v-on:click="logout" class="btn btn-danger">Logout</button>
+        <p><strong>Warning!</strong> This will destroy your local copy of the Stack Overflow tickets and you will have to log in again via Slack.
+        </p>
+        <p><button v-on:click="logout" class="btn btn-danger">Logout</button></p>
       </div> <!-- alert -->
     </div> <!-- container -->
 
