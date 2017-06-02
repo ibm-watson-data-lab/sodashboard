@@ -10,6 +10,16 @@ var locateDoc = function(id) {
   return null;
 };
 
+var validateAssignment = function(sel) {
+  var uid = sel.options[sel.selectedIndex].value;
+  var uname = sel.options[sel.selectedIndex].text;
+  if (uname && uid && uname.length>1 && uid.length == 9) {
+    $('#assignUserBtn').prop('disabled', false);
+  } else {
+    $('#assignUserBtn').prop('disabled', true);
+  }
+};
+
 var app = new Vue({
   el: '#app',
   data: {
