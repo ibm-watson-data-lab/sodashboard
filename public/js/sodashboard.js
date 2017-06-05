@@ -101,14 +101,20 @@ var app = new Vue({
         app.notetxt = '';
       });
     },
-    profileEditor: function() {
-      // load the user profile
-      db.get(app.loggedinuser._id).then(function(data) {
-        // enable the profile editor
-        app.profile = data;
+    profileEditor: function(obj) {
+      if (obj && !obj.clientX) { // make sure this isn't a MouseEvent 
+        app.profile = obj;
         app.mode = 'profile';
         window.location.hash = '#profile';
-      });
+      } else {
+        // load the user profile
+        db.get(app.loggedinuser._id).then(function (data) {
+          // enable the profile editor
+          app.profile = data;
+          app.mode = 'profile';
+          window.location.hash = '#profile';
+        });
+      }
     },
     saveProfile: function() {
       // save the profile to PouchDB
@@ -363,23 +369,33 @@ db.get('_local/user').then(function(data) {
       .on('error', app.onSyncError);
   }).on('error', app.onSyncError);;
 
-
-  // parse the hash
-  if (window.location.hash && window.location.hash !== '#') {
-    var hash = window.location.hash.replace(/^#/,'');
-    if (hash === 'unassigned') {
-      app.unAssignedTickets();
-    } else if (hash === 'profile') {
-      app.profileEditor();
-    } else if (hash === 'mytickets') {
-      app.myTickets();
-    } else if (hash.match(/^edit/)) {
-      var match = hash.match(/[0-9]+$/);
-      if (match) {
-        app.edit(match[0]);
+  // if user has an incomplete profile, take them to their profile page
+  // get profile from remote db because sync is probably not yet complete
+  var rdb = new PouchDB(url);
+  rdb.get(app.loggedinuser["_id"]).then(function (userdata) {
+    if (!userdata.so_id) {
+      app.profileEditor(userdata);
+    } else {
+      // parse the hash
+      if (window.location.hash && window.location.hash !== '#') {
+        var hash = window.location.hash.replace(/^#/, '');
+        if (hash === 'unassigned') {
+          app.unAssignedTickets();
+        } else if (hash === 'profile') {
+          app.profileEditor();
+        } else if (hash === 'mytickets') {
+          app.myTickets();
+        } else if (hash.match(/^edit/)) {
+          var match = hash.match(/[0-9]+$/);
+          if (match) {
+            app.edit(match[0]);
+          }
+        }
       }
     }
-  }
+  }).catch(function(userdataerr) {
+    console.log(userdataerr);
+  });
 
 }).catch(function(e) {
   // if there's no _local/user document, you're not logged in
