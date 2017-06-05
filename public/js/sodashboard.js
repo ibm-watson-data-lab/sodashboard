@@ -10,13 +10,18 @@ var locateDoc = function(id) {
   return null;
 };
 
-var validateAssignment = function(sel) {
-  var uid = sel.options[sel.selectedIndex].value;
-  var uname = sel.options[sel.selectedIndex].text;
+var validateAssignment = function(sel, inp) {
+  var uid = sel ? sel.options[sel.selectedIndex].value : '';
+  var uname = sel ? sel.options[sel.selectedIndex].text : '';
   if (uname && uid && uname.length>1 && uid.length == 9) {
     $('#assignUserBtn').prop('disabled', false);
   } else {
-    $('#assignUserBtn').prop('disabled', true);
+    var other = inp ? $(inp).val() : '';
+    if (other && other.trim() && other.length > 1) {
+      $('#assignUserBtn').prop('disabled', false);
+    } else {
+      $('#assignUserBtn').prop('disabled', true);
+    }
   }
 };
 

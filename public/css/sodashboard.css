@@ -81,3 +81,8 @@ body {
 	width: 100%;
 	height: 5px;
 }
+
+#otherOwner {
+  display: inline-block;
+  margin-top: 10px;
+}
