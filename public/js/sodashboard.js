@@ -92,7 +92,7 @@ var app = new Vue({
       });
     },
     profileEditor: function(obj) {
-      if (obj && !obj.clientX) { // make sure this isn't a MouseEvent
+      if (obj && !obj.clientX) { // make sure this isn't a MouseEvent 
         app.profile = obj;
         app.mode = 'profile';
         window.location.hash = '#profile';
@@ -363,7 +363,7 @@ db.get('_local/user').then(function(data) {
   // get profile from remote db because sync is probably not yet complete
   var rdb = new PouchDB(url);
   rdb.get(app.loggedinuser["_id"]).then(function (userdata) {
-    if (!userdata.user_id || !userdata.user_name || !userdata.so_id) {
+    if (!userdata.so_id) {
       app.profileEditor(userdata);
     } else {
       // parse the hash
