@@ -293,13 +293,21 @@ var app = new Vue({
       if (app.doc) {
         if (app.customtagsedit) {
           if (app.doc.custom_tags) {
-            app.doc.custom_tags = app.doc.custom_tags.split(',').map(function (tag) {
-              return tag.trim();
-            });
+            if (typeof app.doc.custom_tags === 'string') {
+              app.doc.custom_tags = app.doc.custom_tags.split(',').map(function (tag) {
+                // normalize tags (i.e., lowercase, replace whitespace with hyphen)
+                return tag.trim().toLowerCase().replace(/\s+/g, '-');
+              });
+            }
           }
           else {
             app.doc.custom_tags = [];
           }
+
+          //remove empty and duplicate tags
+          app.doc.custom_tags = app.doc.custom_tags.filter(function(tag, idx ,arr) {
+            return tag && typeof tag === 'string' && arr.indexOf(tag) === idx;
+          });
 
           db.put(app.doc).then(function(data) {
             app.doc._rev = data.rev;
