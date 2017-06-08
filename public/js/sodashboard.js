@@ -35,7 +35,8 @@ var app = new Vue({
     syncComplete: false,
     search: '',
     notetxt: '',
-    customtagsedit: false
+    customtagsedit: false, 
+    showNotes: false
   },
   computed: {
     sortedDocs: function () {
