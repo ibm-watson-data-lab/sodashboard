@@ -43,8 +43,8 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
           <ul class="nav navbar-nav">
-            <li><a v-on:click="myTickets" href="#">Mine</a></li>
-            <li><a v-on:click="unAssignedTickets" href="#">Unassigned</a></li>
+            <li><a v-on:click="myTickets" href="#mytickets">Mine</a></li>
+            <li><a v-on:click="unAssignedTickets" href="#unassigned">Unassigned</a></li>
           </ul>
           <form v-on:submit.prevent="doSearch" class="navbar-form navbar-left">
             <div class="form-group">
@@ -83,12 +83,12 @@
         <div class="col-md-6">
           <h2>My Tickets</h2>
           <p>See a list of tickets assigned to you that don't yet have an answer.</p>
-          <p><a v-on:click="myTickets" class="btn btn-default" href="#" role="button">My Tickets &raquo;</a></p>
+          <p><a v-on:click="myTickets" class="btn btn-default" href="#mytickets" role="button">My Tickets &raquo;</a></p>
         </div>
         <div class="col-md-6">
           <h2>Unassigned tickets</h2>
           <p>If you are on Stack Overflow triage duty, then this is where you can find the tickets that need a home.</p>
-          <p><a v-on:click="unAssignedTickets" class="btn btn-default" href="#" role="button">Unassigned tickets &raquo;</a></p>
+          <p><a v-on:click="unAssignedTickets" class="btn btn-default" href="#unassigned" role="button">Unassigned tickets &raquo;</a></p>
         </div>
       </div>
 
