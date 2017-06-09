@@ -111,11 +111,11 @@
       <div class="row datarow" v-for="doc in sortedDocs">
         <div class="col-xs-10 col-md-5">
                <span class="question-title"><a :href="doc.question.link" target="_new">{{ doc.question.title}}</a></span> <br />
-              <a class="owner" :href="doc.question.owner.link" target="_new">{{ doc.question.owner.display_name }} ({{ doc.question.owner.reputation }})</a>
+              <a class="owner" :href="doc.question.owner.link" target="_new" title="question owner and reputation">{{ doc.question.owner.display_name }} ({{ doc.question.owner.reputation }})</a>
         </div>
         <div class="col-xs-2 col-md-1">
-          <span class="badge">{{ doc.question.answer_count }}</span>
-          <span v-if="doc.answered" class="badge answered"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></span>
+          <span class="badge" title="answers">{{ doc.question.answer_count }}</span>
+          <span v-if="doc.answered" class="badge answered" title="already answered!"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></span>
           <span v-if="doc.rejected" class="badge rejected"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></span>
         </div>
         <div class="col-xs-12 col-md-4">
@@ -279,21 +279,26 @@
 
     <!-- profile editor -->
     <div v-if="mode==='profile'" class="container">
-      <div class="alert alert-info">
+      <div class="alert alert-info form-horizontal">
         <h2>Profile</h2>
         <div class="form-group">
-          <label for="slackid">Slack ID</label>
-          <input v-model="profile.user_id" type="string" class="form-control" id="slackid" readonly >
+          <label for="slackid" class="col-sm-3 control-label">Slack ID</label>
+          <div class="col-sm-9">
+            <input v-model="profile.user_id" type="string" class="form-control" id="slackid" readonly>
+          </div>
         </div>
         <div class="form-group">
-          <label for="slackname">Slack name</label>
-          <input v-model="profile.user_name" type="string" class="form-control" id="slackname" readonly >
+          <label for="slackname" class="col-sm-3 control-label">Slack name</label>
+          <div class="col-sm-9">
+            <input v-model="profile.user_name" type="string" class="form-control" id="slackname" readonly >
+          </div>
         </div>
         <div class="form-group">
-          <label for="soid">Stack Overflow ID</label>
-          <input v-model="profile.so_id" type="string" class="form-control" id="soid">
-          <p class="help-block">We need to know your Stack Overflow identity too. Enter the number that appears in 
-            your Stack Overflow profile URL so we can tell whether you have answered a question.
+          <label for="soid" class="col-sm-3 control-label">Stack Overflow ID</label>
+          <div class="col-sm-9">
+            <input v-model="profile.so_id" type="string" class="form-control" id="soid">
+          </div>
+          <p class="help-block col-sm-9 col-sm-offset-3">We need to know your Stack Overflow identity too. Enter the number that appears in your Stack Overflow profile URL so we can tell whether you have answered a question.
           </p>
         </div>
         <button v-on:click="saveProfile" class="btn btn-default">Submit</button>
@@ -303,10 +308,9 @@
 
       <div class="alert alert-danger">
         <h2>Logout</h2>
-        <div><b>Warning!</b> This will destroy your local copy of the Stack Overflow tickets and you
-             will have to log in again via Slack
-        </div>
-        <button v-on:click="logout" class="btn btn-danger">Logout</button>
+        <p><strong>Warning!</strong> This will destroy your local copy of the Stack Overflow tickets and you will have to log in again via Slack.
+        </p>
+        <p><button v-on:click="logout" class="btn btn-danger">Logout</button></p>
       </div> <!-- alert -->
     </div> <!-- container -->
 
