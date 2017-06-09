@@ -180,7 +180,7 @@ var app = new Vue({
     unAssignedTickets: function() {
       // load unassigned tickets
       var map = function(doc) {
-        if (!doc.rejected && doc.owner === null) {
+        if (!doc.rejected && !doc.answered && doc.owner === null) {
           emit(doc.question.creation_date, null);
         }
       };
