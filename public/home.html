@@ -151,7 +151,7 @@
                     <tr v-for="note in doc.notes">
                       <td colspan="6">{{ note.note }}</td>
                       <td>{{ note.who }}</td>
-                      <td>{{ note.time }}</td>
+                      <td>{{ new Date(note.time).toLocaleString(undefined, dateDisplayOpts) }}</td>
                     </tr>
                   </table>
                 </div>
@@ -278,7 +278,7 @@
                 <tr v-for="note in doc.notes">
                   <td colspan="6">{{ note.note }}</td>
                   <td>{{ note.who }}</td>
-                  <td>{{ note.time }}</td>
+                  <td>{{ new Date(note.time).toLocaleString(undefined, dateDisplayOpts) }}</td>
                 </tr>
               </table>
             </div>
