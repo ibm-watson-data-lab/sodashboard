@@ -102,8 +102,13 @@
     <!-- list of documents -->
     <div v-if="mode==='unassigned' || mode === 'mytickets' || mode === 'search'" class="container">
       <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-10">
           <h2>{{ mode }} tickets <span class="badge" v-if="numDocs">{{ docs.length }}</span></h2>
+        </div>
+        <div class="col-md-2">
+          <h2>
+            <button v-if="mode==='unassigned' || mode==='mytickets'" v-on:click="showNotes=!showNotes" class="btn btn-primary align-bottom">{{ showNotes ? 'Hide Notes' : 'Show Notes' }}</button>
+          </h2>
         </div>
       </div>
 
@@ -130,6 +135,30 @@
         </div>
         <div class="col-xs-12 col-md-2">
           <button v-on:click="edit(doc._id)" class="btn btn-default">Edit</button>
+        </div>
+        <div v-if="showNotes" class="col-md-12 text-muted">
+          <div class="panel panel-default">
+            <div class="panel-heading">Notes</div>
+            <div class="panel-body">
+              <div class="row">
+                <div class="col-md-12">
+                  <table class="table table-condensed">
+                    <tr v-if="doc.notes">
+                      <th colspan="6">what</th>
+                      <th>who</th>
+                      <th>when</th>
+                    </tr>
+                    <tr v-for="note in doc.notes">
+                      <td colspan="6">{{ note.note }}</td>
+                      <td>{{ note.who }}</td>
+                      <td>{{ new Date(note.time).toLocaleString(undefined, dateDisplayOpts) }}</td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!--end notes panel-->
         </div>
       </div><!-- end loop through documents -->
 
@@ -253,7 +282,7 @@
                 <tr v-for="note in doc.notes">
                   <td colspan="6">{{ note.note }}</td>
                   <td>{{ note.who }}</td>
-                  <td>{{ note.time }}</td>
+                  <td>{{ new Date(note.time).toLocaleString(undefined, dateDisplayOpts) }}</td>
                 </tr>
               </table>
             </div>
