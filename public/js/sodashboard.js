@@ -60,7 +60,15 @@ var app = new Vue({
     syncComplete: false,
     search: '',
     notetxt: '',
-    customtagsedit: false
+    customtagsedit: false, 
+    showNotes: false, 
+    dateDisplayOpts: {
+      weekday: 'long',
+      hour: 'numeric', 
+      minute: 'numeric',
+      hour12: true,
+      month: 'long', 
+      day: 'numeric' }
   },
   computed: {
     sortedDocs: function () {
