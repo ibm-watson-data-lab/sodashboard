@@ -40,6 +40,8 @@ var parseHash = function() {
         app.edit(match[0]);
       }
     }
+  } else {
+    app.mode = 'startup';
   }
 }
 
