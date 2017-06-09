@@ -10,13 +10,18 @@ var locateDoc = function(id) {
   return null;
 };
 
-var validateAssignment = function(sel) {
-  var uid = sel.options[sel.selectedIndex].value;
-  var uname = sel.options[sel.selectedIndex].text;
+var validateAssignment = function(sel, inp) {
+  var uid = sel ? sel.options[sel.selectedIndex].value : '';
+  var uname = sel ? sel.options[sel.selectedIndex].text : '';
   if (uname && uid && uname.length>1 && uid.length == 9) {
     $('#assignUserBtn').prop('disabled', false);
   } else {
-    $('#assignUserBtn').prop('disabled', true);
+    var other = inp ? $(inp).val() : '';
+    if (other && other.trim() && other.length > 1) {
+      $('#assignUserBtn').prop('disabled', false);
+    } else {
+      $('#assignUserBtn').prop('disabled', true);
+    }
   }
 };
 
@@ -299,13 +304,21 @@ var app = new Vue({
       if (app.doc) {
         if (app.customtagsedit) {
           if (app.doc.custom_tags) {
-            app.doc.custom_tags = app.doc.custom_tags.split(',').map(function (tag) {
-              return tag.trim();
-            });
+            if (typeof app.doc.custom_tags === 'string') {
+              app.doc.custom_tags = app.doc.custom_tags.split(',').map(function (tag) {
+                // normalize tags (i.e., lowercase, replace whitespace with hyphen)
+                return tag.trim().toLowerCase().replace(/\s+/g, '-');
+              });
+            }
           }
           else {
             app.doc.custom_tags = [];
           }
+
+          //remove empty and duplicate tags
+          app.doc.custom_tags = app.doc.custom_tags.filter(function(tag, idx ,arr) {
+            return tag && typeof tag === 'string' && arr.indexOf(tag) === idx;
+          });
 
           db.put(app.doc).then(function(data) {
             app.doc._rev = data.rev;

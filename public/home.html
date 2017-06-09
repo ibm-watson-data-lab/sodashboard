@@ -194,11 +194,15 @@
             <div class="col-md-2 col-xs-12">
               <h4>Ownership</h4>
             </div>
-            <div class="col-md-10 col-xs-10">
-<select v-model="doc.owner" v-bind:disabled="doc.answered || doc.rejected" onchange="validateAssignment(this)">
+            <div class="col-md-2 col-xs-12">
+              <select v-model="doc.owner" v-bind:disabled="doc.answered || doc.rejected" onchange="validateAssignment(this)" class="col-xs-12">
                 <option value="">----</option>
                 <option v-for="(user, i) in userlist" :value="i">{{ user }}</option>
+                <option value="OTHER">Other</option>
               </select>
+              <input v-model="doc.otherowner" type="text" class="form-control" id="otherOwner" placeholder="Enter name" v-show="doc.owner == 'OTHER'" onkeyup="validateAssignment(null,this)">
+            </div>
+            <div class="col-md-8">
               <button v-if="!doc.answered && !doc.rejected" class="btn btn-default" v-on:click="assign(doc._id)" id="assignUserBtn" disabled>Assign</button>
             </div>
           </div>
