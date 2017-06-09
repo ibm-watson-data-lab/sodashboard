@@ -25,6 +25,24 @@ var validateAssignment = function(sel, inp) {
   }
 };
 
+var parseHash = function() {
+  if (window.location.hash && window.location.hash !== '#') {
+    var hash = window.location.hash.replace(/^#/, '');
+    if (hash === 'unassigned') {
+      app.unAssignedTickets();
+    } else if (hash === 'profile') {
+      app.profileEditor();
+    } else if (hash === 'mytickets') {
+      app.myTickets();
+    } else if (hash.match(/^edit/)) {
+      var match = hash.match(/[0-9]+$/);
+      if (match) {
+        app.edit(match[0]);
+      }
+    }
+  }
+}
+
 var app = new Vue({
   el: '#app',
   data: {
@@ -147,7 +165,6 @@ var app = new Vue({
           app.docs.push(data.rows[i].doc);
         }
         app.mode = 'mytickets';
-        window.location.hash = '#mytickets';
       });
     },
     unAssignedTickets: function() {
@@ -165,7 +182,6 @@ var app = new Vue({
           app.docs.push(data.rows[i].doc);
         }
         app.mode = 'unassigned';
-        window.location.hash = '#unassigned';
       });
     },
     onSyncChange: function(change) {
@@ -390,24 +406,15 @@ db.get('_local/user').then(function(data) {
       app.profileEditor(userdata);
     } else {
       // parse the hash
-      if (window.location.hash && window.location.hash !== '#') {
-        var hash = window.location.hash.replace(/^#/, '');
-        if (hash === 'unassigned') {
-          app.unAssignedTickets();
-        } else if (hash === 'profile') {
-          app.profileEditor();
-        } else if (hash === 'mytickets') {
-          app.myTickets();
-        } else if (hash.match(/^edit/)) {
-          var match = hash.match(/[0-9]+$/);
-          if (match) {
-            app.edit(match[0]);
-          }
-        }
-      }
+      parseHash();
     }
   }).catch(function(userdataerr) {
     console.log(userdataerr);
+  });
+
+
+  $(window).on('hashchange', function(evt) {
+    parseHash();
   });
 
 }).catch(function(e) {
