@@ -107,10 +107,7 @@
         </div>
         <div class="col-md-2">
           <h2>
-            <button v-if="showNotes && mode === 'unassigned'" v-on:click="showNotes=false;unAssignedTickets" class="btn btn-primary align-bottom">Hide Notes</button>
-            <button v-else-if="!showNotes && mode === 'unassigned'" v-on:click="showNotes=true;unAssignedTickets" class="btn btn-primary align-bottom">Show Notes</button>
-            <button v-else-if="showNotes && mode === 'mytickets'" v-on:click="showNotes=false;myTickets" class="btn btn-primary align-bottom">Hide Notes</button>
-            <button v-else-if="!showNotes && mode === 'mytickets'" v-on:click="showNotes=true;myTickets" class="btn btn-primary align-bottom">Show Notes</button>
+            <button v-if="mode==='unassigned' || mode==='mytickets'" v-on:click="showNotes=!showNotes" class="btn btn-primary align-bottom">{{ showNotes ? 'Hide Notes' : 'Show Notes' }}</button>
           </h2>
         </div>
       </div>
