@@ -136,7 +136,7 @@
         <div class="col-xs-12 col-md-2">
           <button v-on:click="edit(doc._id)" class="btn btn-default">Edit</button>
         </div>
-        <div v-if="showNotes" class="col-md-12 text-muted">
+        <div v-if="showNotes && doc.notes && doc.notes.length > 0" class="col-md-12 text-muted">
           <div class="panel panel-default">
             <div class="panel-heading">Notes</div>
             <div class="panel-body">
