@@ -86,3 +86,73 @@ body {
   display: inline-block;
   margin-top: 10px;
 }
+
+.custom-tags {
+  list-style: outside none none;
+  margin: 5px 0;
+  padding: 0;
+}
+
+.custom-tags > li:not(:last-child) {
+  background-color: #5bc0de;
+  border-radius: 5px;
+  color: #fff;
+  display: inline-block;
+  margin: 5px 10px 5px 0;
+  vertical-align: middle;
+}
+
+.custom-tags > li:last-child {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.custom-tags > li > span:first-child {
+  display: inline-block;
+  padding: 0 7px;
+  vertical-align: middle;
+}
+
+.custom-tags > li > span:last-child {
+  border-radius: 0 5px 5px 0;
+  border-left: 1px solid #337ab7;
+  color: #fff;
+  display: inline-block;
+  font-weight: 300;
+  line-height: 25px;
+  padding: 0 7px;
+  top: 0;
+  vertical-align: middle;
+}
+
+.custom-tags > li > span:last-child:hover,
+.custom-tags > li > span:last-child:focus {
+  cursor: pointer;
+  background-color: #337ab7;
+}
+
+.customtags-group {
+  width: 200px;
+}
+.suggestedtags {
+  background-color: white;
+  border-color: #ccc;
+  border-style: solid;
+  border-width: 0 1px 1px;
+  display: table;
+  overflow: hidden;
+  position: absolute;
+  text-align: left;
+  width: 200px;
+  z-index: 10;
+}
+
+.suggestedtags > div {
+  cursor: pointer;
+  padding: 2px 5px;
+}
+
+.suggestedtags > div:hover,
+.suggestedtags > div:focus {
+  background-color: #ccc;
+}

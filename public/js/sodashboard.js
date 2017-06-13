@@ -60,7 +60,10 @@ var app = new Vue({
     syncComplete: false,
     search: '',
     notetxt: '',
-    customtagsedit: false, 
+    customtags: '', 
+    allcustomtags: [],
+    suggestedtags: [],
+    customtagsfocus: false,
     showNotes: false, 
     dateDisplayOpts: {
       weekday: 'long',
@@ -90,6 +93,21 @@ var app = new Vue({
       return Object.keys(obj).sort();
     }
   },
+  watch: {
+    customtags: function(val, oldVal) {
+      while(app.suggestedtags.length > 0) {
+        app.suggestedtags.pop();
+      }
+      var t = val.trim().toLowerCase();
+      if (t.length > 0 && app.allcustomtags.length > 0) {
+        for (var i=0; i<app.allcustomtags.length; i++) {
+          if (app.allcustomtags[i].indexOf(t) === 0) {
+            app.suggestedtags.push(app.allcustomtags[i]);
+          }
+        }
+      }
+    }
+  },
   methods: {
     notify: function(msg) {
       var opts = {
@@ -115,8 +133,9 @@ var app = new Vue({
         app.doc = data;
         app.mode = 'edit';
         app.notetxt = '';
-        app.customtagsedit = !data.custom_tags || data.custom_tags.length === 0;
         window.location.hash = '#edit?' + docid;
+
+        app.getAllCustomTags();
       });
     },
     addNote: function() {
@@ -157,6 +176,18 @@ var app = new Vue({
         app.mode = 'startup';
         window.location.hash = '#';
       });
+    },
+    getAllCustomTags: function() {
+      db.query('search/customtags').then(function (resp) {
+        if (resp && resp.rows) {
+          app.allcustomtags = resp.rows[0].value || [];
+        } else {
+          console.warn(resp);
+        }
+      }).catch(function (err) {
+        console.warn(err);
+      });
+
     },
     myTickets: function() {
      // load tickets assigned to me  
@@ -326,33 +357,62 @@ var app = new Vue({
         });
       }
     },
-    editcustomtags: function(id) {
+    selectcustomtag: function(tag) {
+      app.customtags = tag;
+      document.getElementById('custom-tags').focus();
+    },
+    addcustomtags: function(id) {
       if (app.doc) {
-        if (app.customtagsedit) {
-          if (app.doc.custom_tags) {
-            if (typeof app.doc.custom_tags === 'string') {
-              app.doc.custom_tags = app.doc.custom_tags.split(',').map(function (tag) {
-                // normalize tags (i.e., lowercase, replace whitespace with hyphen)
-                return tag.trim().toLowerCase().replace(/\s+/g, '-');
-              });
-            }
-          }
-          else {
-            app.doc.custom_tags = [];
-          }
+        app.doc.custom_tags = app.doc.custom_tags || [];
 
-          //remove empty and duplicate tags
-          app.doc.custom_tags = app.doc.custom_tags.filter(function(tag, idx ,arr) {
+        var tags = app.customtags.split(',')
+          .map(function (tag) {
+            // normalize tags (i.e., lowercase, replace whitespace with hyphen)
+            return tag.trim().toLowerCase().replace(/\s+/g, '-');
+          })
+          .filter(function(tag, idx, arr) {
+            //remove empty and duplicate tags
             return tag && typeof tag === 'string' && arr.indexOf(tag) === idx;
           });
 
-          db.put(app.doc).then(function(data) {
-            app.doc._rev = data.rev;
-            app.customtagsedit = false;
-          });
+        for (var t in tags) {
+          if (app.doc.custom_tags.indexOf(tags[t]) === -1) {
+            app.doc.custom_tags.push(tags[t]);
+          }
         }
-        else {
-          app.customtagsedit = true;
+
+        db.put(app.doc).then(function(data) {
+          app.doc._rev = data.rev;
+          app.customtags = '';
+        });
+      }
+    },
+    removecustomtag: function(id, tag) {
+      if (app.doc && app.doc.custom_tags) {
+        app.doc.custom_tags = app.doc.custom_tags.filter(function(t, idx ,arr) {
+          return t && typeof t === 'string' && t !== tag;
+        });
+
+        db.put(app.doc).then(function(data) {
+          app.doc._rev = data.rev;
+        });
+      }
+    },
+    handleKeyNav: function(dir) {
+      var isInput = document.activeElement.id === 'custom-tags';
+      var isPrev = dir === 'prev';
+
+      if (isInput && !isPrev) {
+        document.querySelector('.suggestedtag').focus();
+      } else if (!isInput && !isPrev) {
+        if (document.activeElement.nextSibling) {
+          document.activeElement.nextSibling.focus();
+        }
+      } else if (!isInput && isPrev) {
+        if (document.activeElement.previousSibling) {
+          document.activeElement.previousSibling.focus();
+        } else {
+          document.getElementById('custom-tags').focus();
         }
       }
     },

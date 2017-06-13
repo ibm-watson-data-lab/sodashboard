@@ -197,20 +197,32 @@
         <div class="panel-heading">Custom Tags</div>
         <div class="panel-body">
           <div class="row">
-            <div class="col-md-12">
-              <div v-show="!customtagsedit">
-                <span v-for="ctag in doc.custom_tags" class="ctag">{{ ctag }}</span>
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-10">
-              <div class="form-group">
-                <input v-model="doc.custom_tags" type="string" class="form-control" id="custom_tags" placeholder="Enter tags separated by a comma (e.g., cloudant, envoy, etc)?" v-show="customtagsedit">
-              </div>
-            </div>
-            <div class="col-md-2">
-              <button class="btn btn-primary" v-on:click="editcustomtags(doc._id)">{{ customtagsedit ? 'Save' : 'Edit' }}</button>
+            <div class="col-md-12" >
+              <ul class="custom-tags">
+                <li v-for="ctag in doc.custom_tags">
+                  <span>{{ ctag }}</span>
+                  <span class="glyphicon glyphicon-remove" aria-hidden="true" v-on:click="removecustomtag(doc._id, ctag)" v-on:keyup.enter="removecustomtag(doc._id, ctag)" tabindex="0" title="Remove tag"></span>
+                </li>
+                <li>
+                  <div class="input-group customtags-group">
+                    <input v-model="customtags" type="text" class="form-control" id="custom-tags" placeholder="Add a custom tag"
+                      v-on:keyup.enter="addcustomtags(doc._id)" v-on:keyup.down="handleKeyNav('next')"
+                      v-on:focus="customtagsfocus = true" v-on:blur="customtagsfocus = false">
+                    <span class="input-group-btn">
+                      <button class="btn btn-primary" type="button" v-on:click="addcustomtags(doc._id)"
+                        v-on:focus="customtagsfocus = true" v-on:blur="customtagsfocus = false">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                      </button>
+                    </span>
+                  </div>
+                  <div class="suggestedtags" v-show="customtagsfocus && suggestedtags.length > 0" v-cloak>
+                    <div class="suggestedtag" v-for="tag in suggestedtags" tabindex="0"
+                      v-on:click="selectcustomtag(tag)" v-on:keyup.enter="selectcustomtag(tag)"
+                      v-on:keyup.down="handleKeyNav('next')" v-on:keyup.up="handleKeyNav('prev')" v-on:mousedown.prevent="customtagsfocus = true"
+                      v-on:focus="customtagsfocus = true" v-on:blur="customtagsfocus = false">{{ tag }}</div>
+                  </div>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
