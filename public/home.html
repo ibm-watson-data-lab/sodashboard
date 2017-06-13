@@ -218,7 +218,7 @@
                   <div class="suggestedtags" v-show="customtagsfocus && suggestedtags.length > 0" v-cloak>
                     <div class="suggestedtag" v-for="tag in suggestedtags" tabindex="0"
                       v-on:click="selectcustomtag(tag)" v-on:keyup.enter="selectcustomtag(tag)"
-                      v-on:keyup.down="handleKeyNav('next')" v-on:keyup.up="handleKeyNav('prev')"
+                      v-on:keyup.down="handleKeyNav('next')" v-on:keyup.up="handleKeyNav('prev')" v-on:mousedown.prevent="customtagsfocus = true"
                       v-on:focus="customtagsfocus = true" v-on:blur="customtagsfocus = false">{{ tag }}</div>
                   </div>
                 </li>
