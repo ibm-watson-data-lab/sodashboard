@@ -474,7 +474,7 @@ db.get('_local/user').then(function(data) {
   var auth = data.username + ':' + data.password;
   var url = data.url.replace(/\/\//, '//' + auth + '@');
   var opts = { live: true, retry: true };
-  url = url +'s';
+
   db.replicate.from(url).on('complete', function(info) {
     console.log(info);
     console.log('initial sync complete - now syncing');
