@@ -30,8 +30,8 @@
             <span v-if="syncInProgress">
               <span class="glyphicon glyphicon-flash" aria-hidden="true"></span>
             </span>
-            <span v-if="syncError">
-              <span class="glyphicon glyphicon-error" aria-hidden="true"></span>
+            <span v-if="syncError" class="syncerror">
+              <span class="glyphicon glyphicon-ban-circle" aria-hidden="true"></span>
             </span>
             <span v-if="syncComplete">
               <span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 
