@@ -156,3 +156,7 @@ body {
 .suggestedtags > div:focus {
   background-color: #ccc;
 }
+
+.syncerror {
+  color: red;
+}

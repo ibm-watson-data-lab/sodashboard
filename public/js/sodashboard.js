@@ -286,6 +286,7 @@ var app = new Vue({
       app.syncInProgress = false;
       app.syncComplete = false;
       app.syncError = true;
+      //app.notify('Sync error: ' + err.status + ' -  ' + err.message);
       console.log('error', err);
     },
     assign: function(id) {
