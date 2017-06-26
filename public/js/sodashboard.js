@@ -189,6 +189,22 @@ var app = new Vue({
       });
 
     },
+    allTickets: function() {
+     // load tickets assigned to me  
+      var map = function(doc) {
+        if (doc.question) {
+          emit(doc.question.creation_date, null);
+        }
+      };
+      // get list of unassigned tickets, newest first
+      db.query(map, {descending:true, include_docs:true}).then(function(data) {
+        app.docs = [];
+        for(var i in data.rows) {
+          app.docs.push(data.rows[i].doc);
+        }
+        app.mode = 'all';
+      });
+    },
     myTickets: function() {
      // load tickets assigned to me  
       var map = function(doc) {
