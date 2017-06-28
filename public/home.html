@@ -43,6 +43,7 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
           <ul class="nav navbar-nav">
+            <li><a v-on:click="allTickets" href="#alltickets">All</a></li>
             <li><a v-on:click="myTickets" href="#mytickets">Mine</a></li>
             <li><a v-on:click="unAssignedTickets" href="#unassigned">Unassigned</a></li>
           </ul>
@@ -100,14 +101,14 @@
     </div> <!-- /container -->
 
     <!-- list of documents -->
-    <div v-if="mode==='unassigned' || mode === 'mytickets' || mode === 'search'" class="container">
+    <div v-if="mode==='unassigned' || mode === 'mytickets' || mode === 'all' || mode === 'search'" class="container">
       <div class="row">
         <div class="col-md-10">
           <h2>{{ mode }} tickets <span class="badge" v-if="numDocs">{{ docs.length }}</span></h2>
         </div>
         <div class="col-md-2">
           <h2>
-            <button v-if="mode==='unassigned' || mode==='mytickets'" v-on:click="showNotes=!showNotes" class="btn btn-primary align-bottom">{{ showNotes ? 'Hide Notes' : 'Show Notes' }}</button>
+            <button v-if="mode==='unassigned' || mode==='mytickets' || mode==='all'" v-on:click="showNotes=!showNotes" class="btn btn-primary align-bottom">{{ showNotes ? 'Hide Notes' : 'Show Notes' }}</button>
           </h2>
         </div>
       </div>
