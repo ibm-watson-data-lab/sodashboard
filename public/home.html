@@ -120,7 +120,7 @@
               <a class="owner" :href="doc.question.owner.link" target="_new" title="question owner and reputation">{{ doc.question.owner.display_name }} ({{ doc.question.owner.reputation }})</a>
         </div>
         <div class="col-xs-2 col-md-1">
-          <span class="badge" title="answers">{{ doc.question.answer_count }} Answers</span>
+          <span class="badge" title="answers">{{ doc.question.answer_count }} {{ doc.question.answer_count === 1 ? 'Answer' : 'Answers' }}</span>
           <span v-if="doc.answered" class="badge answered" title="already answered!"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></span>
           <span v-if="doc.rejected" class="badge rejected"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></span>
         </div>
