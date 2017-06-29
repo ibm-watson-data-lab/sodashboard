@@ -13,14 +13,16 @@ var locateDoc = function(id) {
 var validateAssignment = function(sel, inp) {
   var uid = sel ? sel.options[sel.selectedIndex].value : '';
   var uname = sel ? sel.options[sel.selectedIndex].text : '';
-  if (uname && uid && uname.length>1 && uid.length == 9) {
-    $('#assignUserBtn').prop('disabled', false);
+  if (uid === '' && app.doc.owner) {
+    $('#assignUserBtn').prop('disabled', false).text('Unassign');
+  } else if (uname && uid && uname.length>1 && uid.length == 9) {
+    $('#assignUserBtn').prop('disabled', false).text('Assign');
   } else {
     var other = inp ? $(inp).val() : '';
     if (other && other.trim() && other.length > 1) {
-      $('#assignUserBtn').prop('disabled', false);
+      $('#assignUserBtn').prop('disabled', false).text('Assign');
     } else {
-      $('#assignUserBtn').prop('disabled', true);
+      $('#assignUserBtn').prop('disabled', true).text('Assign');
     }
   }
 };
@@ -315,6 +317,7 @@ var app = new Vue({
         doc = locateDoc(id);
       }
       if (doc) {
+        doc.owner = doc.owner ? doc.owner : null;
         doc.assigned = true;
         doc.assigned_by = app.loggedinuser.user_id;
         doc.assigned_by_name = app.loggedinuser.user_name;
@@ -322,12 +325,13 @@ var app = new Vue({
         db.put(doc).then(function(reply) {
           if (app.mode === 'mytickets' && doc.owner !== app.loggedinuser.user_id) {
             app.removeFromList(doc._id);
-          } else if (app.mode === 'unassigned') {
+          } else if (app.mode === 'unassigned' && doc.owner) {
             app.removeFromList(doc._id);
           } else {
             doc._rev = reply.rev;
           }
-          app.notify('Question ' + doc._id + ' reassigned');
+          app.notify('Question ' + doc._id + (doc.owner ? ' reassigned' : ' unassigned'));
+          $('#assignUserBtn').text('Assign')
         });
       }
     },

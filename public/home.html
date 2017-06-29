@@ -238,7 +238,7 @@
             </div>
             <div class="col-md-2 col-xs-12">
               <select v-model="doc.owner" v-bind:disabled="doc.answered || doc.rejected" onchange="validateAssignment(this)" class="col-xs-12">
-                <option value="">----</option>
+                <option value="">--(unassign)--</option>
                 <option v-for="(user, i) in userlist" :value="i">{{ user }}</option>
                 <option value="OTHER">Other</option>
               </select>
