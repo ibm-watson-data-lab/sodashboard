@@ -192,14 +192,8 @@ var app = new Vue({
 
     },
     allTickets: function() {
-     // load tickets assigned to me  
-      var map = function(doc) {
-        if (doc.question) {
-          emit(doc.question.creation_date, null);
-        }
-      };
       // get list of unassigned tickets, newest first
-      db.query(map, {descending:true, include_docs:true}).then(function(data) {
+      db.query('dashboard/alltickets', {descending:true, include_docs:true}).then(function(data) {
         app.docs = [];
         for(var i in data.rows) {
           app.docs.push(data.rows[i].doc);
@@ -208,17 +202,8 @@ var app = new Vue({
       });
     },
     myTickets: function() {
-     // load tickets assigned to me  
-      var map = function(doc) {
-        if (doc.question && 
-             (typeof doc.rejected === 'undefined' || doc.rejected === false) && 
-             (typeof doc.answered === 'undefined' || doc.answered === false) &&
-             doc.owner !== null) {
-          emit(doc.owner, null);
-        }
-      };
       // get list of unassigned tickets, newest first
-      db.query(map, {key: app.loggedinuser._id, include_docs:true}).then(function(data) {
+      db.query('dashboard/mytickets', {key: app.loggedinuser._id, include_docs:true}).then(function(data) {
         app.docs = [];
         for(var i in data.rows) {
           app.docs.push(data.rows[i].doc);
@@ -227,14 +212,8 @@ var app = new Vue({
       });
     },
     unAssignedTickets: function() {
-      // load unassigned tickets
-      var map = function(doc) {
-        if (!doc.rejected && !doc.answered && doc.owner === null) {
-          emit(doc.question.creation_date, null);
-        }
-      };
       // get list of unassigned tickets, newest first
-      db.query(map, {include_docs:true, descending: true}).then(function(data) {
+      db.query('dashboard/unassignedtickets', {include_docs:true, descending: true}).then(function(data) {
         console.log('unAssignedTickets', data);
         app.docs = [];
         for(var i in data.rows) {
