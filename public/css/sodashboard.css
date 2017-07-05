@@ -160,3 +160,7 @@ body {
 .syncerror {
   color: red;
 }
+
+[v-cloak] {
+  display: none;
+}
