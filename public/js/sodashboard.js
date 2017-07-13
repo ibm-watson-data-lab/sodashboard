@@ -47,6 +47,98 @@ var parseHash = function() {
   }
 }
 
+Vue.component('tags-typeahead', {
+  template: '#tags-typeahead',
+  props: ['refid', 'reftags'],
+  data: function () {
+    return {
+      customtagsfocus: false,
+      suggestedtags: [],
+      customtags: '',
+      inputid: 'custom-tags-' + this.refid
+    }
+  },
+  watch: {
+    customtags: function (val, oldVal) {
+      while (this.suggestedtags.length > 0) {
+        this.suggestedtags.pop();
+      }
+      var t = val.trim().toLowerCase();
+      if (t.length > 0 && this.reftags.length > 0) {
+        for (var i = 0; i < this.reftags.length; i++) {
+          if (this.reftags[i].indexOf(t) === 0) {
+            this.suggestedtags.push(this.reftags[i]);
+          }
+        }
+      }
+    }
+  },
+  methods: {
+    handleKeyNav: function (dir) {
+      var isInput = document.activeElement.id === this.inputid;
+      var isPrev = dir === 'prev';
+
+      if (isInput && !isPrev) {
+        document.querySelector('.suggestedtag').focus();
+      } else if (!isInput && !isPrev) {
+        if (document.activeElement.nextSibling) {
+          document.activeElement.nextSibling.focus();
+        }
+      } else if (!isInput && isPrev) {
+        if (document.activeElement.previousSibling) {
+          document.activeElement.previousSibling.focus();
+        } else {
+          document.getElementById(this.inputid).focus();
+        }
+      }
+    },
+    selectcustomtag: function (tag) {
+      this.customtags = tag;
+      document.getElementById(this.inputid).focus();
+    },
+    addcustomtags: function (id) {
+      var tags = this.customtags.split(',')
+        .map(function (tag) {
+          // normalize tags (i.e., lowercase, replace whitespace with hyphen)
+          return tag.trim().toLowerCase().replace(/\s+/g, '-');
+        })
+        .filter(function (tag, idx, arr) {
+          // remove empty and duplicate tags
+          return tag && typeof tag === 'string' && arr.indexOf(tag) === idx;
+        });
+
+      var doc = null;
+      if (app.doc && app.doc._id === id) {
+        doc = app.doc;
+      } else if (app.profile && app.profile._id === id) {
+        doc = app.profile;
+      }
+
+      if (doc) {
+        doc.custom_tags = doc.custom_tags || [];
+
+        for (var t in tags) {
+          if (doc.custom_tags.indexOf(tags[t]) === -1) {
+            doc.custom_tags.push(tags[t]);
+          }
+        }
+
+        var _this = this
+        db.put(doc).then(function (data) {
+          doc._rev = data.rev;
+          _this.customtags = '';
+
+          // if (app.doc && app.doc._id === id) {
+          //   app.doc = doc;
+          // } else if (app.profile && app.profile._id === id) {
+          //   app.profile = doc;
+          // }
+        });
+      }
+    }
+  }
+})
+
 var app = new Vue({
   el: '#app',
   data: {
@@ -62,9 +154,7 @@ var app = new Vue({
     syncComplete: false,
     search: '',
     notetxt: '',
-    customtags: '', 
     allcustomtags: [],
-    suggestedtags: [],
     customtagsfocus: false,
     showNotes: false, 
     dateDisplayOpts: {
@@ -93,21 +183,6 @@ var app = new Vue({
         }
       }
       return Object.keys(obj).sort();
-    }
-  },
-  watch: {
-    customtags: function(val, oldVal) {
-      while(app.suggestedtags.length > 0) {
-        app.suggestedtags.pop();
-      }
-      var t = val.trim().toLowerCase();
-      if (t.length > 0 && app.allcustomtags.length > 0) {
-        for (var i=0; i<app.allcustomtags.length; i++) {
-          if (app.allcustomtags[i].indexOf(t) === 0) {
-            app.suggestedtags.push(app.allcustomtags[i]);
-          }
-        }
-      }
     }
   },
   methods: {
@@ -169,6 +244,8 @@ var app = new Vue({
           window.location.hash = '#profile';
         });
       }
+
+      app.getAllCustomTags();
     },
     saveProfile: function() {
       // save the profile to PouchDB
@@ -357,63 +434,22 @@ var app = new Vue({
         });
       }
     },
-    selectcustomtag: function(tag) {
-      app.customtags = tag;
-      document.getElementById('custom-tags').focus();
-    },
-    addcustomtags: function(id) {
-      if (app.doc) {
-        app.doc.custom_tags = app.doc.custom_tags || [];
-
-        var tags = app.customtags.split(',')
-          .map(function (tag) {
-            // normalize tags (i.e., lowercase, replace whitespace with hyphen)
-            return tag.trim().toLowerCase().replace(/\s+/g, '-');
-          })
-          .filter(function(tag, idx, arr) {
-            //remove empty and duplicate tags
-            return tag && typeof tag === 'string' && arr.indexOf(tag) === idx;
-          });
-
-        for (var t in tags) {
-          if (app.doc.custom_tags.indexOf(tags[t]) === -1) {
-            app.doc.custom_tags.push(tags[t]);
-          }
-        }
-
-        db.put(app.doc).then(function(data) {
-          app.doc._rev = data.rev;
-          app.customtags = '';
-        });
-      }
-    },
     removecustomtag: function(id, tag) {
-      if (app.doc && app.doc.custom_tags) {
-        app.doc.custom_tags = app.doc.custom_tags.filter(function(t, idx ,arr) {
+      var doc = null;
+      if (app.doc && app.doc._id === id && app.doc.custom_tags) {
+        doc = app.doc;
+      } else if (app.profile && app.profile._id === id && app.profile.custom_tags) {
+        doc = app.profile
+      }
+
+      if (doc) {
+        doc.custom_tags = doc.custom_tags.filter(function(t, idx ,arr) {
           return t && typeof t === 'string' && t !== tag;
         });
 
-        db.put(app.doc).then(function(data) {
-          app.doc._rev = data.rev;
+        db.put(doc).then(function(data) {
+          doc._rev = data.rev;
         });
-      }
-    },
-    handleKeyNav: function(dir) {
-      var isInput = document.activeElement.id === 'custom-tags';
-      var isPrev = dir === 'prev';
-
-      if (isInput && !isPrev) {
-        document.querySelector('.suggestedtag').focus();
-      } else if (!isInput && !isPrev) {
-        if (document.activeElement.nextSibling) {
-          document.activeElement.nextSibling.focus();
-        }
-      } else if (!isInput && isPrev) {
-        if (document.activeElement.previousSibling) {
-          document.activeElement.previousSibling.focus();
-        } else {
-          document.getElementById('custom-tags').focus();
-        }
       }
     },
     removeFromList: function(id) {
