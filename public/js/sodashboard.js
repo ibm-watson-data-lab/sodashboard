@@ -154,7 +154,8 @@ var app = new Vue({
     syncComplete: false,
     search: '',
     notetxt: '',
-    allcustomtags: [],
+    alltags: [],
+    taggedusers: [],
     customtagsfocus: false,
     showNotes: false, 
     dateDisplayOpts: {
@@ -212,7 +213,8 @@ var app = new Vue({
         app.notetxt = '';
         window.location.hash = '#edit?' + docid;
 
-        app.getAllCustomTags();
+        app.getAllTags();
+        app.findTaggedUsers();
       });
     },
     addNote: function() {
@@ -245,7 +247,7 @@ var app = new Vue({
         });
       }
 
-      app.getAllCustomTags();
+      app.getAllTags();
     },
     saveProfile: function() {
       // save the profile to PouchDB
@@ -256,17 +258,53 @@ var app = new Vue({
         window.location.hash = '#';
       });
     },
-    getAllCustomTags: function() {
-      db.query('search/customtags').then(function (resp) {
+    findTaggedUsers: function () {
+      var t = []
+      if (app.doc && app.doc.question) {
+        if (app.doc.custom_tags) {
+          app.doc.custom_tags.forEach(function (tag) {
+            t.push(tag)
+          })
+        }
+        if (app.doc.question.tags) {
+          app.doc.question.tags.forEach(function (tag) {
+            t.push(tag)
+          })
+        }
+      }
+
+      if (t.length > 0) {
+        console.log('tags', t)
+        db.search({
+          query: t.join(' '),
+          fields: ['custom_tags'],
+          filter: function (doc) {
+            return !!doc.user_id
+          },
+          mm: '1%', // (100 / t.length) + '%',
+          include_docs: true
+        }).then(function (resp) {
+          if (resp && resp.rows) {
+            app.taggedusers = resp.rows.map(function (row) {
+              return {
+                'user_id': row.doc.user_id,
+                'user_name': row.doc.user_name
+              }
+            })
+          }
+        })
+      }
+    },
+    getAllTags: function () {
+      db.query('dashboard/alltags').then(function (resp) {
         if (resp && resp.rows) {
-          app.allcustomtags = resp.rows[0].value || [];
+          app.alltags = resp.rows[0].value || [];
         } else {
           console.warn(resp);
         }
       }).catch(function (err) {
         console.warn(err);
       });
-
     },
     allTickets: function() {
       // get list of unassigned tickets, newest first
