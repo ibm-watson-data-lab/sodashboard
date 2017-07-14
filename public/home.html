@@ -219,7 +219,7 @@
                                     <span class="glyphicon glyphicon-remove" aria-hidden="true" v-on:click="removecustomtag(doc._id, ctag)" v-on:keyup.enter="removecustomtag(doc._id, ctag)" tabindex="0" title="Remove tag"></span>
                                 </li>
                                 <li>
-                                    <tags-typeahead v-bind:refid="doc._id" v-bind:reftags="allcustomtags"></tags-typeahead>
+                                    <tags-typeahead v-bind:refid="doc._id" v-bind:reftags="alltags"></tags-typeahead>
                                 </li>
                             </ul>
                         </div>
@@ -235,7 +235,7 @@
                         <div class="col-md-2 col-xs-12">
                             <h4>Ownership</h4>
                         </div>
-                        <div class="col-md-2 col-xs-12">
+                        <div class="col-md-2 col-xs-6">
                             <select v-model="doc.owner" v-bind:disabled="doc.answered || doc.rejected" onchange="validateAssignment(this)" class="col-xs-12">
                 <option value="">--(unassign)--</option>
                 <option v-for="(user, i) in userlist" :value="i">{{ user }}</option>
@@ -243,8 +243,15 @@
               </select>
                             <input v-model="doc.otherowner" type="text" class="form-control" id="otherOwner" placeholder="Enter name" v-show="doc.owner == 'OTHER'" onkeyup="validateAssignment(null,this)">
                         </div>
-                        <div class="col-md-8">
+                        <div class="col-md-2 col-xs-6">
                             <button v-if="!doc.answered && !doc.rejected" class="btn btn-default" v-on:click="assign(doc._id)" id="assignUserBtn" disabled>Assign</button>
+                        </div>
+                        <div class="col-md-2 col-md-offset-4 col-xs-12 taggedusers" v-bind:class="[taggedusers && taggedusers.length > 0 ? 'dropdown' : '']">
+                            <a v-if="taggedusers && taggedusers.length > 0" data-toggle="dropdown" tabindex="0">Users with matching tag</a>
+                            <span v-if="!taggedusers || taggedusers.length == 0">No users with matching tags</span>
+                            <ul class="dropdown-menu">
+                                <li v-for="user in taggedusers">{{ user.user_name }}</li>
+                            </ul>
                         </div>
                     </div>
                     <div v-if="doc.rejected || !doc.answered">
@@ -364,7 +371,7 @@
                                 <span class="glyphicon glyphicon-remove" aria-hidden="true" v-on:click="removecustomtag(profile._id, ctag)" v-on:keyup.enter="removecustomtag(profile._id, ctag)" tabindex="0" title="Remove tag"></span>
                             </li>
                             <li>
-                                <tags-typeahead v-bind:refid="profile._id" v-bind:reftags="allcustomtags"></tags-typeahead>
+                                <tags-typeahead v-bind:refid="profile._id" v-bind:reftags="alltags"></tags-typeahead>
                             </li>
                         </ul>
                     </div>
