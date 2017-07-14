@@ -216,7 +216,7 @@
                             <ul class="custom-tags">
                                 <li v-for="ctag in doc.custom_tags">
                                     <span>{{ ctag }}</span>
-                                    <span class="glyphicon glyphicon-remove" aria-hidden="true" v-on:click="removecustomtag(doc._id, ctag)" v-on:keyup.enter="removecustomtag(doc._id, ctag)" tabindex="0" title="Remove tag"></span>
+                                    <span class="glyphicon glyphicon-remove" aria-role="button" v-on:click="removecustomtag(doc._id, ctag)" v-on:keyup.enter="removecustomtag(doc._id, ctag)" tabindex="0" title="Remove tag"></span>
                                 </li>
                                 <li>
                                     <tags-typeahead v-bind:refid="doc._id" v-bind:reftags="allcustomtags"></tags-typeahead>
@@ -361,7 +361,7 @@
                         <ul class="custom-tags">
                             <li v-for="ctag in profile.custom_tags">
                                 <span>{{ ctag }}</span>
-                                <span class="glyphicon glyphicon-remove" aria-hidden="true" v-on:click="removecustomtag(profile._id, ctag)" v-on:keyup.enter="removecustomtag(profile._id, ctag)" tabindex="0" title="Remove tag"></span>
+                                <span class="glyphicon glyphicon-remove" aria-role="button" v-on:click="removecustomtag(profile._id, ctag)" v-on:keyup.enter="removecustomtag(profile._id, ctag)" tabindex="0" title="Remove tag"></span>
                             </li>
                             <li>
                                 <tags-typeahead v-bind:refid="profile._id" v-bind:reftags="allcustomtags"></tags-typeahead>
