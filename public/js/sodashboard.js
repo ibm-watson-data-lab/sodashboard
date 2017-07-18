@@ -498,6 +498,7 @@ db.get('_local/user').then(function(data) {
   db.replicate.from(url).on('complete', function(info) {
     console.log(info);
     console.log('initial sync complete - now syncing');
+    parseHash();
     db.sync(url, opts)
       .on('change', app.onSyncChange)
       .on('paused', app.onSyncPaused)
