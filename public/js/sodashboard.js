@@ -43,7 +43,7 @@ var parseHash = function() {
       }
     }
   } else {
-    app.mode = 'startup';
+    app.mode = 'unassigned';
   }
 }
 
@@ -145,7 +145,7 @@ var app = new Vue({
     doc: null,
     docs: null,
     userlist: null,
-    mode: 'startup',
+    mode: 'unassigned',
     numDocs: null,
     loggedinuser: null,
     profile: null,
@@ -250,10 +250,10 @@ var app = new Vue({
     saveProfile: function() {
       // save the profile to PouchDB
       db.put(app.profile).then(function(data) {
-        // return to startup mode
+        // return to unassigned mode
         app.profile._rev = data.rev;
-        app.mode = 'startup';
-        window.location.hash = '#';
+        app.mode = 'unassigned';
+        window.location.hash = '#unassigned';
       });
     },
     getAllCustomTags: function() {

@@ -23,7 +23,7 @@
           // write the data to a local PouchDB database
           data._id = '_local/user';
           db.put(data).then(function () {
-            window.location = 'home.html';
+            window.location = 'home.html#unassigned';
           });
         },
         error: function(data) {
