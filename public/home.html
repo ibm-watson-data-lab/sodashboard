@@ -77,8 +77,15 @@
                 <div class="col-md-10">
                     <h2>{{ mode }} tickets <span class="badge" v-if="numDocs">{{ docs.length }}</span></h2>
                     <!-- Symbol Key -->
-                    <p><span title="already answered!" class="badge answered"><span aria-hidden="true" class="glyphicon glyphicon-ok"></span></span> Answered   
-                    <span class="badge rejected"><span aria-hidden="true" class="glyphicon glyphicon-remove"></span></span> Rejected</p>
+                    <div id=symbolkey>
+                        <p>
+                            <span title="already answered!" class="badge answered"><span aria-hidden="true" class="glyphicon glyphicon-ok"></span></span> Answered   
+                            <span class="badge rejected"><span aria-hidden="true" class="glyphicon glyphicon-remove"></span></span> Rejected 
+                            <span class="label label-default tag">SO Tag</span> 
+                            <span class="ctag">Custom Tag</span> 
+                        </p>
+                    </div>
+
                 </div>
                 <div class="col-md-2">
                     <h2>
