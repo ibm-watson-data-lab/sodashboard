@@ -1,166 +1,165 @@
-
 body {
-  padding-top: 70px;
-}
-#loggedinuser, #loggedinuser a {
-  color: white;
-  font-size: 14px;
-  margin-top:15px;
-  margin-right:15px;
+    padding-top: 70px;
 }
 
-#loggedinuser a:hover  {
-  text-decoration: none;
+#loggedinuser,
+#loggedinuser a {
+    color: white;
+    font-size: 14px;
+    margin-top: 15px;
+    margin-right: 15px;
+}
+
+#loggedinuser a:hover {
+    text-decoration: none;
 }
 
 #syncStatus {
-  color: white;
-  float: left;
-  height: 50px;
-  padding: 15px 15px;
-  font-size: 18px;
-  line-height: 20px;
-}
-
-.tag {
-  white-space: normal;
+    color: white;
+    float: left;
+    height: 50px;
+    padding: 15px 15px;
+    font-size: 18px;
+    line-height: 20px;
 }
 
 .ctag {
-  background-color: #e4e4e4;
-  border: 1px solid #ccc;
-  border-radius: 20px;
-  color: #333333;
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 24px;
-  margin-right: 6px;
-  padding: 0 12px;
+    background-color: #e4e4e4;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    color: #333333;
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 24px;
+    margin-right: 6px;
+    padding: 0 12px;
 }
 
 .row .ctag {
-  border-radius: 3px;
-  display: initial;
-  font-size: 10px;
-  line-height: initial;
-  margin-right: 5px;
-  padding: 2px 5px;
+    border-radius: 3px;
+    display: initial;
+    font-size: 10px;
+    line-height: initial;
+    margin-right: 5px;
+    padding: 2px 5px;
 }
 
 .owner:link {
-  color: #666;
-  font-size: 10px;
+    color: #666;
+    font-size: 10px;
 }
 
 .answered {
-  background-color: green;
+    background-color: green;
 }
 
 .rejected {
-  background-color: red;
+    background-color: red;
 }
 
 .datarow {
-  margin-bottom: 32px;
-  border-top: 2px solid #eee;
+    margin-bottom: 32px;
+    border-top: 2px solid #eee;
 }
+
 .datarow>div {
-  margin-bottom: 12px;
+    margin-bottom: 12px;
 }
 
 .question-title {
-  font-size: 125%;
+    font-size: 115%;
 }
 
 [data-notify="progressbar"] {
-	margin-bottom: 0px;
-	position: absolute;
-	bottom: 0px;
-	left: 0px;
-	width: 100%;
-	height: 5px;
+    margin-bottom: 0px;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    height: 5px;
 }
 
 #otherOwner {
-  display: inline-block;
-  margin-top: 10px;
+    display: inline-block;
+    margin-top: 10px;
 }
 
 .custom-tags {
-  list-style: outside none none;
-  margin: 5px 0;
-  padding: 0;
+    list-style: outside none none;
+    margin: 5px 0;
+    padding: 0;
 }
 
-.custom-tags > li:not(:last-child) {
-  background-color: #5bc0de;
-  border-radius: 5px;
-  color: #fff;
-  display: inline-block;
-  margin: 5px 10px 5px 0;
-  vertical-align: middle;
+.custom-tags>li:not(:last-child) {
+    background-color: #5bc0de;
+    border-radius: 5px;
+    color: #fff;
+    display: inline-block;
+    margin: 5px 10px 5px 0;
+    vertical-align: middle;
 }
 
-.custom-tags > li:last-child {
-  display: inline-block;
-  vertical-align: middle;
+.custom-tags>li:last-child {
+    display: inline-block;
+    vertical-align: middle;
 }
 
-.custom-tags > li > span:first-child {
-  display: inline-block;
-  padding: 0 7px;
-  vertical-align: middle;
+.custom-tags>li>span:first-child {
+    display: inline-block;
+    padding: 0 7px;
+    vertical-align: middle;
 }
 
-.custom-tags > li > span:last-child {
-  border-radius: 0 5px 5px 0;
-  border-left: 1px solid #337ab7;
-  color: #fff;
-  display: inline-block;
-  font-weight: 300;
-  line-height: 25px;
-  padding: 0 7px;
-  top: 0;
-  vertical-align: middle;
+.custom-tags>li>span:last-child {
+    border-radius: 0 5px 5px 0;
+    border-left: 1px solid #337ab7;
+    color: #fff;
+    display: inline-block;
+    font-weight: 300;
+    line-height: 25px;
+    padding: 0 7px;
+    top: 0;
+    vertical-align: middle;
 }
 
-.custom-tags > li > span:last-child:hover,
-.custom-tags > li > span:last-child:focus {
-  cursor: pointer;
-  background-color: #337ab7;
+.custom-tags>li>span:last-child:hover,
+.custom-tags>li>span:last-child:focus {
+    cursor: pointer;
+    background-color: #337ab7;
 }
 
 .customtags-group {
-  width: 200px;
+    width: 200px;
 }
+
 .suggestedtags {
-  background-color: white;
-  border-color: #ccc;
-  border-style: solid;
-  border-width: 0 1px 1px;
-  display: table;
-  overflow: hidden;
-  position: absolute;
-  text-align: left;
-  width: 200px;
-  z-index: 10;
+    background-color: white;
+    border-color: #ccc;
+    border-style: solid;
+    border-width: 0 1px 1px;
+    display: table;
+    overflow: hidden;
+    position: absolute;
+    text-align: left;
+    width: 200px;
+    z-index: 10;
 }
 
-.suggestedtags > div {
-  cursor: pointer;
-  padding: 2px 5px;
+.suggestedtags>div {
+    cursor: pointer;
+    padding: 2px 5px;
 }
 
-.suggestedtags > div:hover,
-.suggestedtags > div:focus {
-  background-color: #ccc;
+.suggestedtags>div:hover,
+.suggestedtags>div:focus {
+    background-color: #ccc;
 }
 
 .syncerror {
-  color: red;
+    color: red;
 }
 
 [v-cloak] {
-  display: none;
+    display: none;
 }
