@@ -2,6 +2,15 @@
 
 This is a Bluemix Cloud-Foundry app that powers a Stack Overflow dashboard for the Dev Advocacy team. It is deployed automatically via a Bluemix continuous integration pipeline. Simple create a PR and if it's accepted and merged into the 'master' branch, it will be deployed.
 
+The project itself is online here: https://sodashboard.mybluemix.net/home.html
+
+The code is split into more than one repo:
+
+- The frontend, this repo
+- The "ingestor" that handles the data is a series of openwhisk actions: https://github.com/ibm-watson-data-lab/soingest
+- Notebooks and other work related to analysis of the data: https://github.com/ibm-watson-data-lab/soanalytics
+- The slackbot, still in development and currently living in Lorna's GitHub account: https://github.com/lornajane/sobot
+
 ## Configuration
 
 Environment variables
