@@ -11,14 +11,14 @@ var locateDoc = function(id) {
 };
 
 var validateAssignment = function(sel, inp) {
-  var uid = sel ? sel.options[sel.selectedIndex].value : '';
+  var uid = sel ? sel.options[sel.selectedIndex].value : (app.doc.owner || '');
   var uname = sel ? sel.options[sel.selectedIndex].text : '';
   if (uid === '' && app.doc.owner) {
     $('#assignUserBtn').prop('disabled', false).text('Unassign');
   } else if (uname && uid && uname.length>1 && uid.length == 9) {
     $('#assignUserBtn').prop('disabled', false).text('Assign');
   } else {
-    var other = inp ? $(inp).val() : '';
+    var other = inp ? $(inp).val() : $('#otherOwner').val();
     if (other && other.trim() && other.length > 1) {
       $('#assignUserBtn').prop('disabled', false).text('Assign');
     } else {
