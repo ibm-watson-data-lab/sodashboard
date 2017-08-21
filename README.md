@@ -9,7 +9,7 @@ The code is split into more than one repo:
 - The frontend, this repo
 - The "ingestor" that handles the data is a series of openwhisk actions: https://github.com/ibm-watson-data-lab/soingest
 - Notebooks and other work related to analysis of the data: https://github.com/ibm-watson-data-lab/soanalytics
-- The slackbot, still in development and currently living in Lorna's GitHub account: https://github.com/lornajane/sobot
+- The slackbot, a [hubot](https://hubot.github.com/docs/) called `@stackoverflow-bot` who talks to us in channel https://github.com/ibm-watson-data-lab/sobot
 
 ## Configuration
 
