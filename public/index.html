@@ -1,6 +1,26 @@
 <html>
+  <head>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/pouchdb/6.1.2/pouchdb.min.js"></script>
+      <style type="text/css">
+        #login {
+          display:none
+        }
+      </style>
+  </head>
   <body>
-    <h1>So Dashboard</h1>
-    <h2>Login with /sodashboard in Slack</h2>
+    <script>
+      var db = new PouchDB('sodashboard');
+      db.get('_local/user').then(function() {
+        window.location = 'home.html';
+      }).catch(function() {
+        $('#login').show();
+        // do nothing
+      });
+    </script>
+    <div id="login">
+      <h1>So Dashboard</h1>
+      <h2>Login with /sodashboard in Slack</h2>
+    </div>
   </body>
 </html>
