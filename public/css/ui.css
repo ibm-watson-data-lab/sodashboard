@@ -1,0 +1,42 @@
+#taglimitlist td {
+    padding-right: 4px;
+}
+
+.badge {
+    background-color: #337ab7;
+}
+
+.answerbadge {
+    font-weight: 200;
+}
+
+.tag,
+.filtertag {
+    font-weight: 200;
+}
+
+.filtertag {
+    color: #ccc;
+}
+
+.datarow {
+    padding-top: 8px;
+    margin-bottom: 24px;
+    border-top: 2px solid #eee;
+}
+
+.question-title {
+    font-size: 115%;
+    font-weight: 400;
+}
+
+.navbar {
+    margin-bottom: 0px;
+}
+
+#filterinfo {
+    background-color: #9d9d9d;
+    position: relative;
+    top: -20px;
+    padding: 4px 0px 4px 0px;
+}
