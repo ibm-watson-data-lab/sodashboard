@@ -562,7 +562,7 @@ var app = new Vue({
       // build selector
       var selector = {
         '$and': [ 
-          { 'question.creation_date': {'$lt': new Date().getTime() }}
+          { 'question.creation_date': {'$gt': 0 }}
         ]
       };
       if (qb.tags.length > 0) {
