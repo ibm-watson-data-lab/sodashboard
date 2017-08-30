@@ -158,6 +158,15 @@ var app = new Vue({
     taggedusers: [],
     customtagsfocus: false,
     showNotes: false, 
+    queryBuilder: {
+      questions: 'unassigned', // unassigned / mine / all
+      tagsmode: 'or',          // or / and
+      tags: [],                // array of tags to match
+      rejected: false,         // false / true
+      answered: false,         // false / true
+      search: '',              // free-text search term
+      sort: 'newestfirst'      // newestfirst
+    },
     dateDisplayOpts: {
       weekday: 'long',
       hour: 'numeric', 
@@ -518,6 +527,91 @@ var app = new Vue({
         app.mode = 'search';
       });
       
+    },
+    calculateQuery: function() {
+      var qb = this.queryBuilder;
+      var q = {
+        selector: {},
+        sort: undefined
+      };
+
+      // tags
+      var tagsclause= [];
+      for (var i in qb.tags) {
+        var obj = { 
+          '$or': [
+            {
+              'custom_tags': {
+                '$elemMatch': {
+                  '$eq': qb.tags[i]
+                }
+               }
+             },
+             {
+              'question.tags': {
+                '$elemMatch': {
+                  '$eq': qb.tags[i]
+                }
+               }
+             }
+          ]
+        };
+        tagsclause.push(obj);
+      }
+
+      // build selector
+      var selector = {
+        '$and': [ 
+          { 'question.creation_date': {'$lt': new Date().getTime() }}
+        ]
+      };
+      if (qb.tags.length > 0) {
+        var obj = {};
+        obj['$' + qb.tagsmode] = tagsclause;
+        selector['$and'].push(obj);
+      }
+
+      // add rejected
+      if (qb.rejected) {
+        var obj = {
+          'rejected': qb.rejected
+        };
+        selector['$and'].push(obj);
+      }
+
+      // add answered
+      if (qb.answered) {
+        var obj = {
+          'answered': qb.answered
+        };
+        selector['$and'].push(obj)
+      }
+
+      // add questions
+      selector['$and'].push({ 'type': 'question'})
+      switch(qb.questions) {
+        case 'unassigned': 
+          selector['$and'].push({ 'owner': { '$type': 'null' }})
+        break;
+        case 'mine': 
+          selector['$and'].push({ 'owner': this.loggedinuser._id })
+        break;
+        default: break;
+      }
+
+      // add to q
+      q.selector = selector;
+
+      // add sort
+      q.sort = [ {'question.creation_date': 'desc'} ];
+      return q;
+    },
+    performQuery: function() {
+      var q = this.calculateQuery();
+      db.find(q).then(function(data) {
+        app.docs = data.docs;
+        app.mode = 'search';
+      });
     }
   }
 });
@@ -527,6 +621,17 @@ db.get('_local/user').then(function(data) {
 
   // set the logged in user
   app.loggedinuser = data.user;
+
+  // create the index
+  db.createIndex({
+    index: {
+      fields: ['question.creation_date']
+    }
+  }).then(function (result) {
+    console.log('Index creation success', result);
+  }).catch(function (err) {
+    console.log('Index creation error', err);
+  });
 
   // sync with Cloudant
   var auth = data.username + ':' + data.password;
