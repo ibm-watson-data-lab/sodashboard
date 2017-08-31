@@ -36,9 +36,9 @@
                                 Owner <span class="caret"></span>
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="dropdownAssignedTo">
-                                <li><a v-on:click="unAssignedTickets" href="#unassigned">Unassigned</a></li>
-                                <li><a v-on:click="myTickets" href="#mytickets">Mine</a></li>
-                                <li><a v-on:click="allTickets" href="#alltickets">All</a></li>
+                                <li><a v-on:click="queryBuilder.questions='unassigned'" href="#">Unassigned</a></li>
+                                <li><a v-on:click="queryBuilder.questions='mine'" href="#">Mine</a></li>
+                                <li><a v-on:click="queryBuilder.questions='all'" href="#">All</a></li>
                             </ul>
                         </li>
                         <li>
@@ -110,10 +110,10 @@
                 <!-- Symbol Key -->
                 <div id="symbolkey" class="col-md-3">
                     <p>
-                        <span title="already answered!" class="badge answered"><span aria-hidden="true" class="glyphicon glyphicon-ok"></span></span> Answered   
-                        <span class="badge rejected"><span aria-hidden="true" class="glyphicon glyphicon-remove"></span></span> Rejected 
-                        <span class="label label-default tag">SO Tag</span> 
-                        <span class="label label-default ctag">Custom Tag</span> 
+                        <span class="badge answered" title="Question is already answered"><span aria-hidden="true" class="glyphicon glyphicon-ok"></span></span> Answered   
+                        <span class="badge rejected" title="Question was rejected"><span aria-hidden="true" class="glyphicon glyphicon-remove"></span></span> Rejected 
+                        <span class="label label-default tag" title="StackOverflow defined tags">SO Tag</span> 
+                        <span class="label label-default ctag" title="User defined tags">Custom Tag</span> 
                     </p>
                 </div>
             </div>
@@ -149,17 +149,17 @@
                     <a class="owner" :href="doc.question.owner.link" target="_new" title="question owner and reputation">{{ doc.question.owner.display_name }} ({{ doc.question.owner.reputation}})</a>
                 </div>
                 <div class="col-xs-1 col-md-1">
-                    <span class="badge" title="answers">{{ doc.question.answer_count }} {{ doc.question.answer_count === 1 ? 'Answer' : 'Answers' }}</span>
-                    <span v-if="doc.answered" class="badge answered" title="already answered!"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></span>
-                    <span v-if="doc.rejected" class="badge rejected"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></span>
+                    <span class="badge" title="Number of answers">{{ doc.question.answer_count }} {{ doc.question.answer_count === 1 ? 'Answer' : 'Answers' }}</span>
+                    <span v-if="doc.answered" class="badge answered" title="Question is already answered"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></span>
+                    <span v-if="doc.rejected" class="badge rejected" title="Question was rejected"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></span>
                 </div>
                 <div class="col-xs-12 col-md-3">
                     <span v-for="tag in doc.question.tags">
-                        <span class="label label-default tag">{{ tag }}</span>
+                        <span class="label label-default tag" :title="tag">{{ tag }}</span>
                         <span class="spacerbreaker"> </span>
                     </span>
                     <span v-for="ctag in doc.custom_tags">
-                        <span class="label label-default ctag">{{ ctag }}</span>
+                        <span class="label label-default ctag" :title="ctag">{{ ctag }}</span>
                         <span class="spacerbreaker"> </span>
                     </span>
                 </div>

@@ -39,7 +39,7 @@ var parseHash = function() {
     //   q = hash.substring(hash.indexOf('?') + 1)
     //   parseQuery(q)
     // }
-    if (hash === 'unassigned') {
+    /*if (hash === 'unassigned') {
       app.unAssignedTickets();
     } else if (hash === 'profile') {
       app.profileEditor();
@@ -47,14 +47,14 @@ var parseHash = function() {
       app.myTickets();
     } else if (hash === 'alltickets') {
       app.allTickets();
-    } else if (hash.match(/^edit/)) {
+    } else*/ if (hash.match(/^edit/)) {
       var match = hash.match(/[0-9]+$/);
       if (match) {
         app.edit(match[0]);
       }
     }
-  } else {
-    app.unAssignedTickets();
+  // } else {
+  //   app.unAssignedTickets();
   }
 }
 
@@ -323,8 +323,9 @@ var app = new Vue({
       db.put(app.profile).then(function(data) {
         // return to unassigned mode
         app.profile._rev = data.rev;
-        app.mode = 'unassigned';
-        window.location.hash = '#unassigned';
+        // app.mode = 'unassigned';
+        // window.location.hash = '#unassigned';
+        app.queryBuilder.questions = 'unassigned'
       });
     },
     findTaggedUsers: function () {
@@ -377,40 +378,40 @@ var app = new Vue({
     },
     allTickets: function() {
       // get list of unassigned tickets, newest first
-      db.query('dashboard/alltickets', {descending:true, include_docs:true}).then(function(data) {
-        app.docs = [];
-        for(var i in data.rows) {
-          app.docs.push(data.rows[i].doc);
-        }
-        app.mode = 'all';
-        app.queryBuilder.questions = 'all'
-        app.performQuery()
-      });
+      // db.query('dashboard/alltickets', {descending:true, include_docs:true}).then(function(data) {
+      //   app.docs = [];
+      //   for(var i in data.rows) {
+      //     app.docs.push(data.rows[i].doc);
+      //   }
+      //   app.mode = 'all';
+      //   app.queryBuilder.questions = 'all'
+      //   app.performQuery()
+      // });
     },
     myTickets: function() {
       // get list of unassigned tickets, newest first
-      db.query('dashboard/mytickets', {key: app.loggedinuser._id, include_docs:true}).then(function(data) {
-        app.docs = [];
-        for(var i in data.rows) {
-          app.docs.push(data.rows[i].doc);
-        }
-        app.mode = 'mytickets';
-        app.queryBuilder.questions = 'mine'
-        app.performQuery()
-      });
+      // db.query('dashboard/mytickets', {key: app.loggedinuser._id, include_docs:true}).then(function(data) {
+      //   app.docs = [];
+      //   for(var i in data.rows) {
+      //     app.docs.push(data.rows[i].doc);
+      //   }
+      //   app.mode = 'mytickets';
+      //   app.queryBuilder.questions = 'mine'
+      //   app.performQuery()
+      // });
     },
     unAssignedTickets: function() {
       // get list of unassigned tickets, newest first
-      db.query('dashboard/unassignedtickets', {include_docs:true, descending: true}).then(function(data) {
-        console.log('unAssignedTickets', data);
-        app.docs = [];
-        for(var i in data.rows) {
-          app.docs.push(data.rows[i].doc);
-        }
-        app.mode = 'unassigned';
-        app.queryBuilder.questions = 'unassigned'
-        app.performQuery()
-      });
+      // db.query('dashboard/unassignedtickets', {include_docs:true, descending: true}).then(function(data) {
+      //   console.log('unAssignedTickets', data);
+      //   app.docs = [];
+      //   for(var i in data.rows) {
+      //     app.docs.push(data.rows[i].doc);
+      //   }
+      //   app.mode = 'unassigned';
+      //   app.queryBuilder.questions = 'unassigned'
+      //   app.performQuery()
+      // });
     },
     onSyncChange: function(change) {
       // when we receive notification of a change
@@ -436,7 +437,8 @@ var app = new Vue({
           }
 
           // if we have a new unassigned ticket and we're in unassigned mode
-          if (!intheList && app.mode === 'unassigned' && d.owner === null && d.status === 'new') {
+          // if (!intheList && app.mode === 'unassigned' && d.owner === null && d.status === 'new') {
+            if (!intheList && app.queryBuilder.questions === 'unassigned' && d.owner === null && d.status === 'new') {
             // add it to the top of our list
             app.docs.unshift(d);
           }
@@ -494,7 +496,8 @@ var app = new Vue({
         db.put(doc).then(function(reply) {
           if (app.mode === 'mytickets' && doc.owner !== app.loggedinuser.user_id) {
             app.removeFromList(doc._id);
-          } else if (app.mode === 'unassigned' && doc.owner) {
+          // } else if (app.mode === 'unassigned' && doc.owner) {
+          } else if (app.queryBuilder.questions === 'unassigned' && doc.owner) {
             app.removeFromList(doc._id);
           } else {
             doc._rev = reply.rev;
@@ -800,31 +803,32 @@ db.get('_local/user').then(function(data) {
     console.warn(err);
   });
 
-  var currenthash = window.location.hash
-  if (currenthash.indexOf('?') !== -1) {
-    var hash = currenthash.substring(1, currenthash.indexOf('?'))
-    var query = currenthash.substring(currenthash.indexOf('?') + 1).split('&')
-    console.log('query', hash, query)
-    switch (hash) {
-      case 'alltickets':
-        app.queryBuilder.questions = 'all'
-        break;
-      case 'mytickets':
-        app.queryBuilder.questions = 'mine'
-        break
-      default:
-        app.queryBuilder.questions = hash
-        break
-    }
+  app.performQuery()
+  // var currenthash = window.location.hash
+  // if (currenthash.indexOf('?') !== -1) {
+  //   var hash = currenthash.substring(1, currenthash.indexOf('?'))
+  //   var query = currenthash.substring(currenthash.indexOf('?') + 1).split('&')
+  //   console.log('query', hash, query)
+  //   switch (hash) {
+  //     case 'alltickets':
+  //       app.queryBuilder.questions = 'all'
+  //       break;
+  //     case 'mytickets':
+  //       app.queryBuilder.questions = 'mine'
+  //       break
+  //     default:
+  //       app.queryBuilder.questions = hash
+  //       break
+  //   }
     
-    query.forEach(function(val) {
-      var q = val.split('=')
-      console.log('qb', app.queryBuilder[q[0]])
-      app.queryBuilder[q[0]] = q[0] === 'tags' ? q[1].split(',') : q[1]
-      // console.log('test', q[0], q[1])
-      console.log('qb', app.queryBuilder[q[0]])
-    })
-  }
+  //   query.forEach(function(val) {
+  //     var q = val.split('=')
+  //     console.log('qb', app.queryBuilder[q[0]])
+  //     app.queryBuilder[q[0]] = q[0] === 'tags' ? q[1].split(',') : q[1]
+  //     // console.log('test', q[0], q[1])
+  //     console.log('qb', app.queryBuilder[q[0]])
+  //   })
+  // }
 
   $(window).on('hashchange', function(evt) {
     parseHash();
