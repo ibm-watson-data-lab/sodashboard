@@ -28,14 +28,25 @@ var validateAssignment = function(sel, inp) {
 };
 
 var parseHash = function() {
+  // var q = ''
+  // if (window.location.search) {
+  //   q = window.location.search
+  //   parseQuery(q)
+  // }
   if (window.location.hash && window.location.hash !== '#') {
     var hash = window.location.hash.replace(/^#/, '');
+    // if (hash.indexOf('?')) {
+    //   q = hash.substring(hash.indexOf('?') + 1)
+    //   parseQuery(q)
+    // }
     if (hash === 'unassigned') {
       app.unAssignedTickets();
     } else if (hash === 'profile') {
       app.profileEditor();
     } else if (hash === 'mytickets') {
       app.myTickets();
+    } else if (hash === 'alltickets') {
+      app.allTickets();
     } else if (hash.match(/^edit/)) {
       var match = hash.match(/[0-9]+$/);
       if (match) {
@@ -43,8 +54,13 @@ var parseHash = function() {
       }
     }
   } else {
-    app.mode = 'unassigned';
+    app.unAssignedTickets();
   }
+}
+
+var parseQuery = function(q) {
+  var query = q.split('&')
+  console.log(query)
 }
 
 Vue.component('tags-typeahead', {
@@ -143,7 +159,7 @@ var app = new Vue({
   el: '#app',
   data: {
     doc: null,
-    docs: null,
+    docs: [],
     userlist: null,
     mode: 'unassigned',
     numDocs: null,
@@ -155,6 +171,7 @@ var app = new Vue({
     search: '',
     notetxt: '',
     alltags: [],
+    mytags: [],
     taggedusers: [],
     customtagsfocus: false,
     showNotes: false, 
@@ -175,6 +192,15 @@ var app = new Vue({
       month: 'long', 
       day: 'numeric' }
   },
+  watch: {
+    queryBuilder: {
+      handler: function (val, oldVal) {
+        // this.deepLink()
+        this.performQuery()
+      },
+      deep: true
+    }
+  },
   computed: {
     sortedDocs: function () {
       // get the app.docs but with tags sorted into order
@@ -193,6 +219,15 @@ var app = new Vue({
         }
       }
       return Object.keys(obj).sort();
+    },
+    hasNotes: function () {
+      if (this.docs) {
+        return this.docs.some(function (doc) {
+          return doc.notes && doc.notes.length > 0
+        })
+      } else {
+        return false
+      }
     }
   },
   methods: {
@@ -214,6 +249,31 @@ var app = new Vue({
         }
       }
       $.notify({message: msg},opts);
+    },
+    deepLink: function () {
+      var currenthash = window.location.hash
+      console.log('hash1', currenthash)
+      if (currenthash.indexOf('?') !== -1) {
+        currenthash = currenthash.substring(0, currenthash.indexOf('?'))
+        console.log('hash2', currenthash)
+      }
+      var loc = '?'
+      if (this.queryBuilder.tags.length) {
+        loc += 'tags=' + this.queryBuilder.tags.join(',')
+      }
+      if (this.queryBuilder.rejected) {
+        loc += '&rejected=' + this.queryBuilder.rejected
+      }
+      if (this.queryBuilder.answered) {
+        loc += '&answered=' + this.queryBuilder.answered
+      }
+      if (this.search) {
+        loc += '&search=' + this.search
+      }
+      console.log('loc', loc)
+      if (loc.length > 1) {
+        window.location.hash = currenthash + loc
+      }
     },
     edit: function(docid) {
       db.get(docid).then(function(data) {
@@ -307,7 +367,7 @@ var app = new Vue({
     getAllTags: function () {
       db.query('dashboard/alltags').then(function (resp) {
         if (resp && resp.rows) {
-          app.alltags = resp.rows[0].value || [];
+          app.alltags = (resp.rows[0].value || []).sort();
         } else {
           console.warn(resp);
         }
@@ -323,6 +383,8 @@ var app = new Vue({
           app.docs.push(data.rows[i].doc);
         }
         app.mode = 'all';
+        app.queryBuilder.questions = 'all'
+        app.performQuery()
       });
     },
     myTickets: function() {
@@ -333,6 +395,8 @@ var app = new Vue({
           app.docs.push(data.rows[i].doc);
         }
         app.mode = 'mytickets';
+        app.queryBuilder.questions = 'mine'
+        app.performQuery()
       });
     },
     unAssignedTickets: function() {
@@ -344,6 +408,8 @@ var app = new Vue({
           app.docs.push(data.rows[i].doc);
         }
         app.mode = 'unassigned';
+        app.queryBuilder.questions = 'unassigned'
+        app.performQuery()
       });
     },
     onSyncChange: function(change) {
@@ -513,20 +579,27 @@ var app = new Vue({
         window.location = 'index.html';
       })
     },
-    doSearch: function() {
-      console.log('search', app.search)
-      db.search({
-        query: app.search,
-        fields: ['question.title', 'question.tags'],
-        include_docs: true
-      }).then(function(data) {
-        app.docs = [];
-        for(var i in data.rows) {
-          app.docs.push(data.rows[i].doc);
-        }
-        app.mode = 'search';
-      });
-      
+    doSearch: function(callback) {
+      if (app.queryBuilder.search) {
+        // app.deepLink()
+        db.search({
+          query: app.queryBuilder.search,
+          fields: ['question.title', 'question.tags', 'question.body'],
+          include_docs: true
+        }).then(function (data) {
+          if (typeof callback === 'function') {
+            callback(data.rows.map(function (r) { return r.doc }))
+          } else {
+            app.docs = [];
+            for (var i in data.rows) {
+                app.docs.push(data.rows[i].doc);
+            }
+            app.mode = 'search';
+          }
+        })
+      } else if (typeof callback === 'function') {
+        callback(null)
+      }
     },
     calculateQuery: function() {
       var qb = this.queryBuilder;
@@ -608,10 +681,55 @@ var app = new Vue({
     },
     performQuery: function() {
       var q = this.calculateQuery();
+      console.log('query', JSON.stringify(app.queryBuilder))
       db.find(q).then(function(data) {
-        app.docs = data.docs;
-        app.mode = 'search';
-      });
+        console.log('performQuery', data.docs.length)
+        app.doSearch(function (docs) {
+          if (docs) {
+            console.log('doSearch', docs.length)
+            var ids = data.docs.map(function(doc) {
+              return doc._id
+            })
+            app.docs = docs.filter(function(doc) {
+              return ids.indexOf(doc._id) !== -1
+            })
+          } else {
+            app.docs = data.docs
+          }
+          app.mode = 'search'
+        })
+      })
+
+    },
+    selectAllTags: function() {
+      $.each($('#taglimitlist input'), function (index, input) {
+        $(input)[0].checked = true
+      })
+    },
+    clearAllTags: function() {
+      $.each($('#taglimitlist input'), function (index, input) {
+        $(input)[0].checked = false
+      })
+    },
+    selectMyTags: function () {
+      $.each($('#taglimitlist input'), function (index, input) {
+        var value = $(input).attr('id')
+        if (app.mytags.indexOf(value) > -1) {
+          $(input)[0].checked = true
+        } else {
+          $(input)[0].checked = false
+        }
+      })
+    },
+    submitTags: function () {
+      app.queryBuilder.tags = []
+      $.each($('#taglimitlist input:checked'), function (index, input) {
+        app.queryBuilder.tags.push($(input).attr('id'))
+      })
+      
+    // },
+    // doNav: function (mode) {
+    //   $('.navbar-brand .glyphicon').attr('class', 'glyphicon glyphicon-refresh')
     }
   }
 });
@@ -662,6 +780,51 @@ db.get('_local/user').then(function(data) {
     console.log(userdataerr);
   });
 
+  db.query('dashboard/usertags', {key: app.loggedinuser._id}).then(function (resp) {
+    if (resp && resp.rows) {
+      app.mytags = resp.rows[0].value || [];
+    } else {
+      console.warn(resp);
+    }
+  }).catch(function (err) {
+    console.warn(err);
+  });
+
+  db.query('dashboard/alltags').then(function (resp) {
+    if (resp && resp.rows) {
+      app.alltags = (resp.rows[0].value || []).sort();
+    } else {
+      console.warn(resp);
+    }
+  }).catch(function (err) {
+    console.warn(err);
+  });
+
+  var currenthash = window.location.hash
+  if (currenthash.indexOf('?') !== -1) {
+    var hash = currenthash.substring(1, currenthash.indexOf('?'))
+    var query = currenthash.substring(currenthash.indexOf('?') + 1).split('&')
+    console.log('query', hash, query)
+    switch (hash) {
+      case 'alltickets':
+        app.queryBuilder.questions = 'all'
+        break;
+      case 'mytickets':
+        app.queryBuilder.questions = 'mine'
+        break
+      default:
+        app.queryBuilder.questions = hash
+        break
+    }
+    
+    query.forEach(function(val) {
+      var q = val.split('=')
+      console.log('qb', app.queryBuilder[q[0]])
+      app.queryBuilder[q[0]] = q[0] === 'tags' ? q[1].split(',') : q[1]
+      // console.log('test', q[0], q[1])
+      console.log('qb', app.queryBuilder[q[0]])
+    })
+  }
 
   $(window).on('hashchange', function(evt) {
     parseHash();

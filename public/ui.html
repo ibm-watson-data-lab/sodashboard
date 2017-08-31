@@ -25,195 +25,421 @@
                         <span class="icon-bar"></span>
                     </button>
                     <a href="#" class="navbar-brand">
-                        <span class="glyphicon glyphicon-equalizer" aria-hidden="true"></span> SO Dashboard</a>
+                        <span class="glyphicon glyphicon-equalizer" aria-hidden="true"></span> SO Dashboard
+                    </a>
                 </div>
                 <div id="bs-example-navbar-collapse-1" class="collapse navbar-collapse">
 
                     <ul class="nav navbar-nav">
                         <li class="dropdown">
                             <a class="dropdown-toggle" type="button" id="dropdownAssignedTo" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                Questions <span class="caret"></span>
+                                Owner <span class="caret"></span>
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="dropdownAssignedTo">
-                                <li><a href="#unassigned">Unassigned</a></li>
-                                <li><a href="#mytickets">Mine</a></li>
-                                <li><a href="#alltickets">All</a></li>
+                                <li><a v-on:click="unAssignedTickets" href="#unassigned">Unassigned</a></li>
+                                <li><a v-on:click="myTickets" href="#mytickets">Mine</a></li>
+                                <li><a v-on:click="allTickets" href="#alltickets">All</a></li>
                             </ul>
                         </li>
                         <li>
-                            <a type="button" data-toggle="modal" data-target="#tagModal">Tags</a>
+                            <a type="button" class="filtertagsdropdown" data-toggle="modal" data-target="#tagModal">Tags <span class="caret"></span></a>
                         </li>
                         <li>
-                            <a href="#">Show:</a>
+                            <a class="showfilter">Show:</a>
                         </li>
                         <li>
-                            <label class="checkbox-inline" style="margin-top:14px;color:#9d9d9d">
-                                <input type="checkbox" value="showrejected"> Rejected
+                            <label class="checkbox-inline filterinput" style="margin-top:14px;color:#9d9d9d">
+                                <input type="checkbox" value="showrejected" v-on:click="queryBuilder.rejected=!queryBuilder.rejected"> Rejected
                             </label>
-                            <label class="checkbox-inline" style="margin-top:14px;color:#9d9d9d">
-                                    <input type="checkbox" value="showrejected"> Answered
+                            <label class="checkbox-inline filterinput" style="margin-top:14px;color:#9d9d9d">
+                                    <input type="checkbox" value="showanswered" v-on:click="queryBuilder.answered=!queryBuilder.answered"> Answered
                             </label>
                         </li>
                     </ul>
 
-                    <form class="navbar-form navbar-left">
+                    <form v-on:submit.prevent="queryBuilder.search=search" class="navbar-form navbar-left">
                         <div class="form-group">
-                            <input type="text" placeholder="Search for stuff!" class="form-control">
+                            <input type="text" placeholder="Search for stuff!" class="form-control" v-model="search">
                         </div>
                         <button type="submit" class="btn btn-default">Search</button>
                     </form>
                     <ul class="nav navbar-nav navbar-right">
                         <li>
                             <div id="syncStatus">
-                                <span><span aria-hidden="true" class="glyphicon glyphicon-ok"></span></span> <span class="badge">677</span>
+                                <span v-if="syncInProgress">
+                                    <span class="glyphicon glyphicon-flash" aria-hidden="true"></span>
+                                </span>
+                                <span v-if="syncError" class="syncerror">
+                                    <span class="glyphicon glyphicon-ban-circle" aria-hidden="true"></span>
+                                </span>
+                                <span v-if="syncComplete">
+                                    <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                                </span>
+                                <span class="badge" v-if="numDocs">{{ numDocs }}</span>
                             </div>
                         </li>
                         <li>
-                            <div id="loggedinuser"><a href="#profile"><span aria-hidden="true" class="glyphicon glyphicon-user"></span> <span>rajrsingh</span></a></div>
+                            <div id="loggedinuser" v-if="loggedinuser">
+                                <a v-on:click="profileEditor" href="#profile">
+                                    <span class="glyphicon glyphicon-user" aria-hidden="true"></span> <span>{{ loggedinuser.user_name }}</span>
+                                </a>
+                            </div>
                         </li>
                     </ul>
                 </div>
             </div>
         </nav>
         <!---->
-        <div id="filterinfo" class="container-fluid">
+        <div id="filterinfo" class="container-fluid" v-if="mode !== 'edit' && mode !== 'profile'">
             <div class="row">
                 <div class="col-md-1"></div>
-                <div class="col-md-11">
-                    <b>Questions: </b><span class="label label-default filtertag">All</span>
-                    <b>Tags: </b>
-                    <span class="label label-default filtertag">database</span>
-                    <span class="label label-default filtertag">cloudant</span>
-                    <span class="label label-default filtertag">couchdb</span>
-                    <b>Search: </b><span class="label label-default filtertag">empty</span>
+                <div class="col-md-8">
+                    <div class="filterwrapper">
+                        <strong>Owner: </strong>
+                        <span class="label label-default filtertag filtertagquestion">{{queryBuilder.questions}}</span>
+                    </div>
+                    <div class="filterwrapper tagscontainer"  v-if="queryBuilder.tags.length">
+                        <strong>Tags: </strong>
+                        <span class="label label-default filtertag" v-for="tag in queryBuilder.tags">{{tag}}</span>
+                    </div>
+                    <div class="filterwrapper" v-if="queryBuilder.search">
+                        <strong>Search: </strong>
+                        <span class="label label-default filtertag">{{queryBuilder.search}}</span>
+                    </div>
+                </div>
+                <!-- Symbol Key -->
+                <div id="symbolkey" class="col-md-3">
+                    <p>
+                        <span title="already answered!" class="badge answered"><span aria-hidden="true" class="glyphicon glyphicon-ok"></span></span> Answered   
+                        <span class="badge rejected"><span aria-hidden="true" class="glyphicon glyphicon-remove"></span></span> Rejected 
+                        <span class="label label-default tag">SO Tag</span> 
+                        <span class="label label-default ctag">Custom Tag</span> 
+                    </p>
                 </div>
             </div>
         </div>
-        <!---->
-        <div class="container">
+        <!-- list of documents -->
+        <div v-if="mode !== 'edit' && mode !== 'profile'" class="container">
             <div class="row">
                 <div class="col-md-10">
-                    <h2>unassigned tickets <span class="badge">5</span></h2>
+                    <h2>
+                        <span v-if="queryBuilder.questions==='mine'">My Tickets</span>
+                        <span v-if="queryBuilder.questions==='all'">All Tickets</span>
+                        <span v-if="queryBuilder.questions==='unassigned'">Unassigned Tickets</span>
+                        <span v-if="queryBuilder.tags.length || queryBuilder.search"> (Filtered)</span>
+                        <span class="badge">{{docs.length}}</span>
+                    </h2>
                 </div>
                 <div class="col-md-2">
-                    <h2><button class="btn btn-primary align-bottom pull-right">Show Notes</button></h2>
+                    <h2>
+                        <button v-if="docs.length > 0 && hasNotes" v-on:click="showNotes=!showNotes" class="btn btn-primary align-bottom">{{ showNotes ? 'Hide Notes' : 'Show Notes' }}</button>
+                        <span v-if="!hasNotes" class="btn btn-primary align-bottom" disabled>No Notes</span>
+                    </h2>
                 </div>
             </div>
-            <div class="row datarow">
-                <div class="col-xs-12 col-md-1"><button class="btn btn-default">Edit</button></div>
-                <div class="col-xs-11 col-md-7"><span class="question-title"><a href="https://stackoverflow.com/questions/45073897/dashdb-an-unexpected-token-if-was-found-following-expected-tokens-may-in" target="_new">dashDB: An unexpected token "IF" was found following " ". Expected tokens may include: "&lt;call&gt;". SQLSTATE=42601</a></span>                    <br> <a href="https://stackoverflow.com/users/3871910/freddy" target="_new" title="question owner and reputation" class="owner">Freddy (397)</a></div>
-                <div class="col-xs-1 col-md-1"><span title="answers" class="badge answerbadge">1 Answer</span>
-                    <!---->
-                    <!---->
+            <div class="row datarow" v-for="doc in sortedDocs">
+                <div class="col-xs-12 col-md-1">
+                    <button v-on:click="edit(doc._id)" class="btn btn-default">Edit</button>
                 </div>
-                <div class="col-xs-12 col-md-3"><span><span class="label label-default tag">dashdb</span> <span class="spacerbreaker"></span></span><span><span class="label label-default tag">database</span> <span class="spacerbreaker"></span></span><span><span class="label label-default tag">db2</span>
-                    <span class="spacerbreaker"></span>
+                <div class="col-xs-11 col-md-7">
+                    <span class="question-title">
+                        <a :href="doc.question.link" target="_new" v-html="doc.question.title"></a>
+                    </span>
+                    <br>
+                    <a class="owner" :href="doc.question.owner.link" target="_new" title="question owner and reputation">{{ doc.question.owner.display_name }} ({{ doc.question.owner.reputation}})</a>
+                </div>
+                <div class="col-xs-1 col-md-1">
+                    <span class="badge" title="answers">{{ doc.question.answer_count }} {{ doc.question.answer_count === 1 ? 'Answer' : 'Answers' }}</span>
+                    <span v-if="doc.answered" class="badge answered" title="already answered!"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></span>
+                    <span v-if="doc.rejected" class="badge rejected"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></span>
+                </div>
+                <div class="col-xs-12 col-md-3">
+                    <span v-for="tag in doc.question.tags">
+                        <span class="label label-default tag">{{ tag }}</span>
+                        <span class="spacerbreaker"> </span>
+                    </span>
+                    <span v-for="ctag in doc.custom_tags">
+                        <span class="label label-default ctag">{{ ctag }}</span>
+                        <span class="spacerbreaker"> </span>
                     </span>
                 </div>
-                <!---->
-            </div>
-            <div class="row datarow">
-                <div class="col-xs-12 col-md-1"><button class="btn btn-default">Edit</button></div>
-                <div class="col-xs-11 col-md-7"><span class="question-title"><a href="https://stackoverflow.com/questions/45022380/my-liberty-java-app-in-bluemix-throwing-sqlexception-informationjava-sql-sqlnont" target="_new">my Liberty java app in Bluemix throwing SQLException informationjava.sql.SQLNonTransientException:</a></span>                    <br> <a href="https://stackoverflow.com/users/8272765/tarasankar" target="_new" title="question owner and reputation" class="owner">Tarasankar (1)</a></div>
-                <div class="col-xs-1 col-md-1"><span title="answers" class="badge answerbadge">2 Answers</span>
-                    <!---->
-                    <!---->
+
+                <div v-if="showNotes && doc.notes && doc.notes.length > 0" class="col-md-12 text-muted">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Notes</div>
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <table class="table table-condensed">
+                                        <tr v-if="doc.notes">
+                                            <th colspan="6">what</th>
+                                            <th>who</th>
+                                            <th>when</th>
+                                        </tr>
+                                        <tr v-for="note in doc.notes">
+                                            <td colspan="6">{{ note.note }}</td>
+                                            <td>{{ note.who }}</td>
+                                            <td>{{ new Date(note.time).toLocaleString(undefined, dateDisplayOpts) }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--end notes panel-->
                 </div>
-                <div class="col-xs-12 col-md-3"><span><span class="label label-default tag">dashdb</span> <span class="spacerbreaker"></span></span><span><span class="label label-default tag">ibm-bluemix</span> <span class="spacerbreaker"></span></span><span><span class="label label-default tag">java</span>
-                    <span class="spacerbreaker"></span>
-                    </span><span><span class="label label-default tag">jdbc</span> <span class="spacerbreaker"></span></span><span><span class="label label-default tag">websphere-liberty</span> <span class="spacerbreaker"></span></span>
-                </div>
-                <!---->
-            </div>
-            <div class="row datarow">
-                <div class="col-xs-12 col-md-1"><button class="btn btn-default">Edit</button></div>
-                <div class="col-xs-11 col-md-7"><span class="question-title"><a href="https://stackoverflow.com/questions/44922133/ibm-analytics-user-logging-data-to-dashdb-then-sent-to-watson-analytics" target="_new">Ibm analytics user logging data to DashDB, then sent to Watson Analytics</a></span>                    <br> <a href="https://stackoverflow.com/users/7205359/slow1mo" target="_new" title="question owner and reputation" class="owner">Slow1mo (6)</a></div>
-                <div class="col-xs-1 col-md-1"><span title="answers" class="badge answerbadge">0 Answers</span>
-                    <!---->
-                    <!---->
-                </div>
-                <div class="col-xs-12 col-md-3"><span><span class="label label-default tag">analytics</span> <span class="spacerbreaker"></span></span><span><span class="label label-default tag">bluemix-mobile-services</span> <span class="spacerbreaker"></span></span><span><span class="label label-default tag">dashdb</span>
-                    <span class="spacerbreaker"></span>
-                    </span><span><span class="label label-default tag">ibm-bluemix</span> <span class="spacerbreaker"></span></span>
-                </div>
-                <!---->
-            </div>
-            <div class="row datarow">
-                <div class="col-xs-12 col-md-1"><button class="btn btn-default">Edit</button></div>
-                <div class="col-xs-11 col-md-7"><span class="question-title"><a href="https://stackoverflow.com/questions/44814590/error-ibmcli-driver-sql30081n-a-communication-error-has-been-detected-comm" target="_new">Error: [IBM][CLI Driver] SQL30081N A communication error has been detected. Communication protocol being used: "TCP/IP"</a></span>                    <br> <a href="https://stackoverflow.com/users/8228788/user8228788" target="_new" title="question owner and reputation" class="owner">user8228788 (1)</a></div>
-                <div class="col-xs-1 col-md-1"><span title="answers" class="badge answerbadge">0 Answers</span>
-                    <!---->
-                    <!---->
-                </div>
-                <div class="col-xs-12 col-md-3"><span><span class="label label-default tag">dashdb</span> <span class="spacerbreaker"></span></span><span><span class="label label-default tag">db2</span> <span class="spacerbreaker"></span></span><span><span class="label label-default tag">ibm-bluemix</span>                    <span class="spacerbreaker"></span></span><span><span class="label label-default tag">node.js</span> <span class="spacerbreaker"></span></span>
-                </div>
-                <!---->
-            </div>
-            <div class="row datarow">
-                <div class="col-xs-12 col-md-1"><button class="btn btn-default">Edit</button></div>
-                <div class="col-xs-11 col-md-7"><span class="question-title"><a href="https://stackoverflow.com/questions/44659706/cloudant-couchdb-updating-dbcopy-database-when-parent-mapreduce-view-changes" target="_new">Cloudant/CouchDB Updating dbcopy database when parent MapReduce View Changes</a></span>                    <br> <a href="https://stackoverflow.com/users/5190216/jay-jungalwala" target="_new" title="question owner and reputation" class="owner">Jay Jungalwala (1)</a></div>
-                <div class="col-xs-1 col-md-1"><span title="answers" class="badge answerbadge">0 Answers</span>
-                    <!---->
-                    <!---->
-                </div>
-                <div class="col-xs-12 col-md-3"><span><span class="label label-default tag">cloudant</span> <span class="spacerbreaker"></span></span><span><span class="label label-default tag">couchdb</span> <span class="spacerbreaker"></span></span> <span><span class="ctag">dbcopy</span>                    <span class="spacerbreaker"></span></span>
-                </div>
-                <!---->
             </div>
         </div>
         <!---->
         <!---->
+
+        <!-- single document edit -->
+        <div v-if="mode==='edit' && doc" class="container">
+                <h2>Edit Question</h2>
+                <div class="panel panel-default">
+                    <div class="panel-heading">Stack Overflow data</div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-xs-2">ID:</div>
+                            <div class="col-xs-10">{{doc._id}}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-2">Title:</div>
+                            <div class="col-xs-10">
+                                <a :href="doc.question.link" target="_new" v-html="doc.question.title"></a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-2">Creator:</div>
+                            <div class="col-xs-10"><a class="owner" :href="doc.question.owner.link" target="_new">{{ doc.question.owner.display_name }} ({{ doc.question.owner.reputation }})</a></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-2">Tags:</div>
+                            <div class="col-xs-10">
+                                <span v-for="tag in doc.question.tags">
+                    <span class="label label-default tag">{{ tag }}</span>
+                                <span class="spacerbreaker"> </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--end Stack Overflow data panel-->
+                <div class="panel panel-default">
+                    <div class="panel-heading">Custom Tags</div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <ul class="custom-tags">
+                                    <li v-for="ctag in doc.custom_tags">
+                                        <span>{{ ctag }}</span>
+                                        <span class="glyphicon glyphicon-remove" aria-role="button" v-on:click="removecustomtag(doc._id, ctag)" v-on:keyup.enter="removecustomtag(doc._id, ctag)" tabindex="0" title="Remove tag"></span>
+                                    </li>
+                                    <li>
+                                        <tags-typeahead v-bind:refid="doc._id" v-bind:reftags="alltags"></tags-typeahead>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--end custom tags panel-->
+    
+                <div class="panel panel-default">
+                    <div class="panel-heading">Change Status</div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-2 col-xs-12">
+                                <h4>Ownership</h4>
+                            </div>
+                            <div class="col-md-2 col-xs-6">
+                                <select v-model="doc.owner" v-bind:disabled="doc.answered || doc.rejected" onchange="validateAssignment(this)" class="col-xs-12">
+                    <option value="">--(unassign)--</option>
+                    <option v-for="(user, i) in userlist" :value="i">{{ user }}</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                                <input v-model="doc.otherowner" type="text" class="form-control" id="otherOwner" placeholder="Enter name" v-show="doc.owner == 'OTHER'" onkeyup="validateAssignment(null,this)">
+                            </div>
+                            <div class="col-md-2 col-xs-6">
+                                <button v-if="!doc.answered && !doc.rejected" class="btn btn-default" v-on:click="assign(doc._id)" id="assignUserBtn" disabled>Assign</button>
+                            </div>
+                            <div class="col-md-2 col-md-offset-4 col-xs-12 taggedusers" v-bind:class="[taggedusers && taggedusers.length > 0 ? 'dropdown' : '']">
+                                <a v-if="taggedusers && taggedusers.length > 0" data-toggle="dropdown" tabindex="0">Users with matching tag</a>
+                                <span v-if="!taggedusers || taggedusers.length == 0">No users with matching tags</span>
+                                <ul class="dropdown-menu">
+                                    <li v-for="user in taggedusers">{{ user.user_name }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div v-if="doc.rejected || !doc.answered">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <hr>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-2 col-xs-12">
+                                    <h4>Rejected</h4>
+                                </div>
+                                <div class="col-md-8 form-group">
+                                    <!--<label for="rejection_reason">Reason</label>-->
+                                    <input v-model="doc.rejection_reason" type="string" class="form-control" id="rejection_reason" placeholder="Why was this question rejected?" v-bind:disabled="doc.answered || doc.rejected">
+                                </div>
+                                <div class="col-md-2">
+                                    <button v-if="!doc.answered && !doc.rejected" class="btn btn-danger" v-on:click="reject(doc._id)">Reject</button>
+                                </div>
+                            </div>
+                        </div>
+                        <!--end reject-->
+                        <div v-if="doc.answered || !doc.rejected">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <hr>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-2 col-xs-12">
+                                    <h4>Answered</h4>
+                                </div>
+                                <div class="col-md-8 form-group">
+                                    <!--<label for="time_to_fix">Time to Fix</label>-->
+                                    <input v-model="doc.time_to_fix" type="number" class="form-control" id="time_to_fix" placeholder="time (in minutes) it took to fix" v-bind:disabled="doc.answered || doc.rejected">
+                                </div>
+                                <div class="col-md-2">
+                                    <button v-if="!doc.answered && !doc.rejected" class="btn btn-success" v-on:click="answered(doc._id)">Answer</button>
+                                </div>
+                            </div>
+                        </div>
+                        <!--end answer-->
+                    </div>
+                </div>
+                <!--end change status panel-->
+    
+                <div class="panel panel-default">
+                    <div class="panel-heading">Notes</div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <table class="table table-condensed">
+                                    <tr v-if="doc.notes">
+                                        <th colspan="6">what</th>
+                                        <th>who</th>
+                                        <th>when</th>
+                                    </tr>
+                                    <tr v-for="note in doc.notes">
+                                        <td colspan="6">{{ note.note }}</td>
+                                        <td>{{ note.who }}</td>
+                                        <td>{{ new Date(note.time).toLocaleString(undefined, dateDisplayOpts) }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2">
+                                <h4>New Note</h4>
+                            </div>
+                            <form v-on:submit.prevent="addNote">
+                                <div class="col-md-8 form-group">
+                                    <!--<label for="note"><h4>New Note</h4></label>-->
+                                    <input v-model="notetxt" type="text" class="form-control" id="note" placeholder="note text">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-default">Post</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--end notes panel-->
+    
+            </div>
+            <!-- end single document edit -->
+
+        <!-- profile editor -->
+        <div v-if="mode==='profile'" class="container">
+                <div class="alert alert-info form-horizontal">
+                    <h2>Profile</h2>
+                    
+                    <div class="form-group">
+                        <label for="slackname" class="col-sm-3 control-label">Slack name</label>
+                        <div class="col-sm-9">
+                            <input v-model="profile.user_name" type="string" class="form-control" id="slackname" readonly>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="slackteam" class="col-sm-3 control-label">Slack team</label>
+                        <div class="col-sm-9">
+                            <input v-model="profile.slack_team" type="string" class="form-control" id="slackteam">
+                        </div>
+                        <p class="help-block col-sm-9 col-sm-offset-3">Which IBM Slack team do you mostly use?  E.g. "ibm-cloudplatform".</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="soid" class="col-sm-3 control-label">Stack Overflow ID</label>
+                        <div class="col-sm-9">
+                            <input v-model="profile.so_id" type="string" class="form-control" id="soid">
+                        </div>
+                        <p class="help-block col-sm-9 col-sm-offset-3">We need to know your Stack Overflow identity too. Enter the number that appears in your Stack Overflow profile URL so we can link your activity there to your identity here.
+                        </p>
+                    </div>
+                    <div class="form-group">
+                        <label for="usertags" class="col-sm-3 control-label">Tags</label>
+                        <div class="col-sm-9">
+                            <ul class="custom-tags">
+                                <li v-for="ctag in profile.custom_tags">
+                                    <span>{{ ctag }}</span>
+                                    <span class="glyphicon glyphicon-remove" aria-role="button" v-on:click="removecustomtag(profile._id, ctag)" v-on:keyup.enter="removecustomtag(profile._id, ctag)" tabindex="0" title="Remove tag"></span>
+                                </li>
+                                <li>
+                                    <tags-typeahead v-bind:refid="profile._id" v-bind:reftags="alltags"></tags-typeahead>
+                                </li>
+                            </ul>
+                        </div>
+                        <p class="help-block col-sm-9 col-sm-offset-3">Enter tags to question in which you would like to be a candidate to answer. Tags may be related to your expertise or areas of interest to help you improve your skills.
+                        </p>
+                    </div>
+                    <button v-on:click="saveProfile" class="btn btn-default">Submit</button>
+                </div>
+                <!-- alert -->
+    
+                <hr />
+    
+                <div class="alert alert-danger">
+                    <h2>Logout</h2>
+                    <p><strong>Warning!</strong> This will destroy your local copy of the Stack Overflow tickets and you will have to log in again via Slack.
+                    </p>
+                    <p><button v-on:click="logout" class="btn btn-danger">Logout</button></p>
+                </div>
+                <!-- alert -->
+            </div>
+            <!-- end profile editor -->
+
+            <div id="tagModal" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">Limit searches to these tags</h4>
+                                <br>
+                                <button type="button" class="btn btn-default" v-on:click="selectMyTags">Select Mine</button>
+                                <button type="button" class="btn btn-default" v-on:click="selectAllTags">Select All</button>
+                                <button type="button" class="btn btn-default" v-on:click="clearAllTags">Clear</button>
+                            </div>
+                            <div class="modal-body">
+                                <ul id="taglimitlist">
+                                    <li v-for="tag in alltags">
+                                        <label class="checkbox-inline"><input type="checkbox" :id="tag">{{tag}}</label>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" v-on:click="submitTags" data-dismiss="modal">Submit</button>
+                            </div>
+            
+                        </div>
+                    </div>
+                </div>
     </div>
-
-    <div id="tagModal" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Limit searches to these tags</h4>
-                    <br>
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Select Mine</button>
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Select All</button>
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Clear</button>
-                </div>
-                <div class="modal-body">
-                    <table id="taglimitlist">
-                        <tr>
-                            <td><label class="checkbox-inline"><input type="checkbox" id="ic3" value="opt3">analytics</label></td>
-                            <td><label class="checkbox-inline"><input type="checkbox" id="ic3" value="opt3">cloudant</label></td>
-                            <td><label class="checkbox-inline"><input type="checkbox" id="ic3" value="opt3">postgresql</label></td>
-                            <td><label class="checkbox-inline"><input type="checkbox" id="ic3" value="opt3">node.js</label></td>
-                        </tr>
-                        <tr>
-                            <td><label class="checkbox-inline"><input type="checkbox" id="ic3" value="opt3">cloudant</label></td>
-                            <td><label class="checkbox-inline"><input type="checkbox" id="ic3" value="opt3">leaflet</label></td>
-                            <td><label class="checkbox-inline"><input type="checkbox" id="ic3" value="opt3">dsx</label></td>
-                            <td><label class="checkbox-inline"><input type="checkbox" id="ic3" value="opt3">offline-first</label></td>
-                        </tr>
-                        <tr>
-                            <td><label class="checkbox-inline"><input type="checkbox" id="ic3" value="opt3">pixiedust</label></td>
-                            <td><label class="checkbox-inline"><input type="checkbox" id="ic3" value="opt3">pixiedust</label></td>
-                            <td><label class="checkbox-inline"><input type="checkbox" id="ic3" value="opt3">bluemix-mobile-services</label></td>
-                            <td><label class="checkbox-inline"><input type="checkbox" id="ic3" value="opt3">bluemix</label></td>
-                        </tr>
-                        <tr>
-                            <td><label class="checkbox-inline"><input type="checkbox" id="ic3" value="opt3">watson-discovery</label></td>
-                            <td><label class="checkbox-inline"><input type="checkbox" id="ic3" value="opt3">bluemix</label></td>
-                            <td><label class="checkbox-inline"><input type="checkbox" id="ic3" value="opt3">watson-conversation</label></td>
-                            <td><label class="checkbox-inline"><input type="checkbox" id="ic3" value="opt3">watson-cognitive</label></td>
-                        </tr>
-                        <tr>
-                            <td><label class="checkbox-inline"><input type="checkbox" id="ic3" value="opt3">watson-ml</label></td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Submit</button>
-                </div>
-
-            </div>
-        </div>
 
 
         <script type="text/x-template" id="tags-typeahead">
@@ -238,7 +464,8 @@
         <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 
         <!-- PouchDB -->
-        <script src="https://cdn.jsdelivr.net/pouchdb/6.1.2/pouchdb.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/pouchdb/pouchdb@6.3.4/dist/pouchdb.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/pouchdb/pouchdb@6.3.4/dist/pouchdb.find.min.js"></script>
 
         <!-- PouchDB quick search plugin -->
         <script src="/js/pouchdb.quick-search.min.js"></script>
@@ -253,7 +480,7 @@
         <script src="https://unpkg.com/vue@2.2.6"></script>
 
         <!-- Our JS -->
-
+        <script src="js/sodashboard.js"></script>
 </body>
 
 </html>

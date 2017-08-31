@@ -5,18 +5,42 @@
 .badge {
     background-color: #337ab7;
 }
+.badge.answered {
+    background-color: #5cb85c;
+}
+.badge.rejected {
+    background-color: #d9534f;
+}
+h2 .badge {
+    margin-left: 20px;
+}
 
 .answerbadge {
     font-weight: 200;
 }
 
 .tag,
+.ctag,
 .filtertag {
     font-weight: 200;
+    display: inline-block;
+}
+.tag {
+    background-color: #777;
+}
+.ctag {
+    background-color: #e4e4e4;
+    border: 1px solid #ccc;
+    color: #333333;
 }
 
 .filtertag {
     color: #ccc;
+    margin-right: 2px;
+}
+
+.filtertagquestion {
+    text-transform: capitalize;
 }
 
 .datarow {
@@ -39,4 +63,69 @@
     position: relative;
     top: -20px;
     padding: 4px 0px 4px 0px;
+}
+
+#taglimitlist li {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: inline-block;
+    width: 25%;
+}
+
+#taglimitlist {
+    margin: 0;
+    padding: 0;
+}
+
+#tagModal .modal-body {
+    max-height: 70vh;
+    overflow: scroll;
+}
+
+#dropdownAssignedTo,
+.filtertagsdropdown {
+    cursor: pointer;
+}
+
+.showfilter {
+    cursor: default;
+}
+.showfilter:hover {
+    color: #9d9d9d !important;
+}
+.filterinput:hover {
+    cursor: pointer;
+    color: #fff !important;
+}
+
+#symbolkey {
+    font-size: 0.9em;
+}
+#symbolkey p {
+    margin: 1px 20px 0 0;
+    text-align: right;
+}
+#symbolkey .badge {
+    margin: 0 2px 0 15px;
+    font-size: 0.8em;
+    vertical-align: baseline;
+}
+#symbolkey .tag {
+    margin: 0 0 0 15px;
+}
+#symbolkey .ctag {
+    margin: 0 0 0 5px;
+}
+
+.filterwrapper {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.filterwrapper.tagscontainer {
+    max-width: 50vw;
+    max-height: 25vh;
+    overflow-y: auto;
+    vertical-align: top;
 }
