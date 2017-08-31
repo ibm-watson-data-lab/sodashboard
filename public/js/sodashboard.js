@@ -27,40 +27,59 @@ var validateAssignment = function(sel, inp) {
   }
 };
 
-var parseHash = function() {
-  // var q = ''
-  // if (window.location.search) {
-  //   q = window.location.search
-  //   parseQuery(q)
-  // }
-  if (window.location.hash && window.location.hash !== '#') {
-    var hash = window.location.hash.replace(/^#/, '');
-    // if (hash.indexOf('?')) {
-    //   q = hash.substring(hash.indexOf('?') + 1)
-    //   parseQuery(q)
-    // }
-    /*if (hash === 'unassigned') {
-      app.unAssignedTickets();
-    } else if (hash === 'profile') {
-      app.profileEditor();
-    } else if (hash === 'mytickets') {
-      app.myTickets();
-    } else if (hash === 'alltickets') {
-      app.allTickets();
-    } else*/ if (hash.match(/^edit/)) {
-      var match = hash.match(/[0-9]+$/);
-      if (match) {
-        app.edit(match[0]);
-      }
+var settingHash = false
+var setHash = function () {
+  var schema = '#/{questions}/{rejected}/{answered}/{search}/{tags}'
+  var hash = schema.replace(/\{(.+?)\}/g, function ($0, $1) {
+    if (app.queryBuilder.hasOwnProperty($1)) {
+      return encodeURIComponent(app.queryBuilder[$1] || '-')
+    } else {
+      return '-'
     }
-  // } else {
-  //   app.unAssignedTickets();
-  }
+  })
+  console.log(hash)
+  settingHash = true
+  window.location.hash = hash
 }
 
-var parseQuery = function(q) {
-  var query = q.split('&')
-  console.log(query)
+var parseHash = function () {
+  if (!settingHash) {
+    if (window.location.hash && window.location.hash !== '#') {
+      // schema: '#/{questions}/{rejected}/{answered}/{search}/{tags}'
+      var hashes = window.location.hash.split('/')
+      if (hashes[0] === '#profile') {
+        app.profileEditor()
+      } else if (hashes[0].startsWith('#edit?')) {
+        var match = hashes[0].match(/[0-9]+$/)
+        if (match) {
+          app.edit(match[0])
+        }
+      } else {
+        // [#, {questions}, {rejected}, {answered}, {search}, {tags}]
+        console.log(hashes)
+        settingHash = true // dont trigger performQuery, yet
+        if (hashes.length > 1) app.queryBuilder.questions = hashes[1] === '-' ? 'unassigned' : hashes[1]
+        if (hashes.length > 2) app.queryBuilder.rejected = (hashes[2] === 'true')
+        if (hashes.length > 3) app.queryBuilder.answered = (hashes[3] === 'true')
+        if (hashes.length > 4) app.queryBuilder.search = hashes[4] === '-' ? '' : decodeURIComponent(hashes[4])
+        app.search = app.queryBuilder.search
+
+        settingHash = false // let the last update trigger the performQuery
+        if (hashes.length > 5) app.queryBuilder.tags = !hashes[5] ? [] : decodeURIComponent(hashes[5]).split(',')
+      }
+    } else {
+      settingHash = true
+      app.queryBuilder.rejected = false
+      app.queryBuilder.answered = false
+      app.queryBuilder.search = ''
+      app.search = ''
+      app.queryBuilder.tags = []
+      settingHash = false
+      app.queryBuilder.questions = 'unassigned'
+    }
+  } else {
+    settingHash = false
+  }
 }
 
 Vue.component('tags-typeahead', {
@@ -195,8 +214,9 @@ var app = new Vue({
   watch: {
     queryBuilder: {
       handler: function (val, oldVal) {
-        // this.deepLink()
-        this.performQuery()
+        if (!settingHash) {
+          this.performQuery()
+        }
       },
       deep: true
     }
@@ -249,31 +269,6 @@ var app = new Vue({
         }
       }
       $.notify({message: msg},opts);
-    },
-    deepLink: function () {
-      var currenthash = window.location.hash
-      console.log('hash1', currenthash)
-      if (currenthash.indexOf('?') !== -1) {
-        currenthash = currenthash.substring(0, currenthash.indexOf('?'))
-        console.log('hash2', currenthash)
-      }
-      var loc = '?'
-      if (this.queryBuilder.tags.length) {
-        loc += 'tags=' + this.queryBuilder.tags.join(',')
-      }
-      if (this.queryBuilder.rejected) {
-        loc += '&rejected=' + this.queryBuilder.rejected
-      }
-      if (this.queryBuilder.answered) {
-        loc += '&answered=' + this.queryBuilder.answered
-      }
-      if (this.search) {
-        loc += '&search=' + this.search
-      }
-      console.log('loc', loc)
-      if (loc.length > 1) {
-        window.location.hash = currenthash + loc
-      }
     },
     edit: function(docid) {
       db.get(docid).then(function(data) {
@@ -494,7 +489,8 @@ var app = new Vue({
         doc.assigned_by_name = app.loggedinuser.user_name;
         doc.assigned_at = new Date().toISOString();
         db.put(doc).then(function(reply) {
-          if (app.mode === 'mytickets' && doc.owner !== app.loggedinuser.user_id) {
+          // if (app.mode === 'mytickets' && doc.owner !== app.loggedinuser.user_id) {
+          if (app.queryBuilder.questions === 'mine' && doc.owner !== app.loggedinuser.user_id) {
             app.removeFromList(doc._id);
           // } else if (app.mode === 'unassigned' && doc.owner) {
           } else if (app.queryBuilder.questions === 'unassigned' && doc.owner) {
@@ -584,7 +580,6 @@ var app = new Vue({
     },
     doSearch: function(callback) {
       if (app.queryBuilder.search) {
-        // app.deepLink()
         db.search({
           query: app.queryBuilder.search,
           fields: ['question.title', 'question.tags', 'question.body'],
@@ -683,13 +678,12 @@ var app = new Vue({
       return q;
     },
     performQuery: function() {
+      setHash()
       var q = this.calculateQuery();
       console.log('query', JSON.stringify(app.queryBuilder))
       db.find(q).then(function(data) {
-        console.log('performQuery', data.docs.length)
         app.doSearch(function (docs) {
           if (docs) {
-            console.log('doSearch', docs.length)
             var ids = data.docs.map(function(doc) {
               return doc._id
             })
@@ -777,6 +771,7 @@ db.get('_local/user').then(function(data) {
       app.profileEditor(userdata);
     } else {
       // parse the hash
+      // console.log('pouchdb user id');
       parseHash();
     }
   }).catch(function(userdataerr) {
@@ -802,33 +797,6 @@ db.get('_local/user').then(function(data) {
   }).catch(function (err) {
     console.warn(err);
   });
-
-  app.performQuery()
-  // var currenthash = window.location.hash
-  // if (currenthash.indexOf('?') !== -1) {
-  //   var hash = currenthash.substring(1, currenthash.indexOf('?'))
-  //   var query = currenthash.substring(currenthash.indexOf('?') + 1).split('&')
-  //   console.log('query', hash, query)
-  //   switch (hash) {
-  //     case 'alltickets':
-  //       app.queryBuilder.questions = 'all'
-  //       break;
-  //     case 'mytickets':
-  //       app.queryBuilder.questions = 'mine'
-  //       break
-  //     default:
-  //       app.queryBuilder.questions = hash
-  //       break
-  //   }
-    
-  //   query.forEach(function(val) {
-  //     var q = val.split('=')
-  //     console.log('qb', app.queryBuilder[q[0]])
-  //     app.queryBuilder[q[0]] = q[0] === 'tags' ? q[1].split(',') : q[1]
-  //     // console.log('test', q[0], q[1])
-  //     console.log('qb', app.queryBuilder[q[0]])
-  //   })
-  // }
 
   $(window).on('hashchange', function(evt) {
     parseHash();

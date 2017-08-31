@@ -36,9 +36,9 @@
                                 Owner <span class="caret"></span>
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="dropdownAssignedTo">
-                                <li><a v-on:click="queryBuilder.questions='unassigned'" href="#">Unassigned</a></li>
-                                <li><a v-on:click="queryBuilder.questions='mine'" href="#">Mine</a></li>
-                                <li><a v-on:click="queryBuilder.questions='all'" href="#">All</a></li>
+                                <li><a v-on:click="queryBuilder.questions='unassigned'">Unassigned</a></li>
+                                <li><a v-on:click="queryBuilder.questions='mine'">Mine</a></li>
+                                <li><a v-on:click="queryBuilder.questions='all'">All</a></li>
                             </ul>
                         </li>
                         <li>
@@ -49,10 +49,10 @@
                         </li>
                         <li>
                             <label class="checkbox-inline filterinput" style="margin-top:14px;color:#9d9d9d">
-                                <input type="checkbox" value="showrejected" v-on:click="queryBuilder.rejected=!queryBuilder.rejected"> Rejected
+                                <input type="checkbox" id="showrejected" v-model="queryBuilder.rejected"> Rejected
                             </label>
                             <label class="checkbox-inline filterinput" style="margin-top:14px;color:#9d9d9d">
-                                    <input type="checkbox" value="showanswered" v-on:click="queryBuilder.answered=!queryBuilder.answered"> Answered
+                                    <input type="checkbox" id="showanswered" v-model="queryBuilder.answered"> Answered
                             </label>
                         </li>
                     </ul>
