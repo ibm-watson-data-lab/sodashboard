@@ -643,18 +643,14 @@ var app = new Vue({
       }
 
       // add rejected
-      if (qb.rejected) {
-        var obj = {
-          'rejected': qb.rejected
-        };
+      if (!qb.rejected) {
+        var obj = { 'rejected': { '$exists': false}};
         selector['$and'].push(obj);
       }
 
       // add answered
-      if (qb.answered) {
-        var obj = {
-          'answered': qb.answered
-        };
+      if (!qb.answered) {
+        var obj = { 'answered': { '$exists': false}}
         selector['$and'].push(obj)
       }
 
