@@ -1,24 +1,31 @@
-#taglimitlist td {
-    padding-right: 4px;
-}
 
 .badge {
     background-color: #337ab7;
 }
-.badge.answered {
-    background-color: #5cb85c;
+.badge.answerbadge, #answerbadgecol>.btn {
+    font-weight: 200;
+    background-color: #558BB8;
 }
-.badge.rejected {
-    background-color: #d9534f;
+#answerbadgecol>.badge.answerbadge {
+    width: 100%;
 }
-h2 .badge {
-    margin-left: 20px;
+.badge.unanswered, #answerbadgecol>.btn.unanswered {
+    background-color: #23BE23;
+    font-weight: 400;
 }
-
-.answerbadge {
+.badge.rejected, #answerbadgecol>.btn.rejected {
+    background-color: #AAA;
     font-weight: 200;
 }
 
+#taglimitlist td {
+    padding-right: 4px;
+}
+
+h2 .badge {
+    margin-left: 20px;
+}
+  
 .tag,
 .ctag,
 .filtertag {
@@ -37,6 +44,7 @@ h2 .badge {
 .filtertag {
     color: #ccc;
     margin-right: 2px;
+    white-space: nowrap;
 }
 
 .filtertagquestion {
@@ -102,19 +110,7 @@ h2 .badge {
 #symbolkey {
     font-size: 0.9em;
 }
-#symbolkey p {
-    margin: 1px 20px 0 0;
-    text-align: right;
-}
-#symbolkey .badge {
-    margin: 0 2px 0 15px;
-    font-size: 0.8em;
-    vertical-align: baseline;
-}
-#symbolkey .tag {
-    margin: 0 0 0 15px;
-}
-#symbolkey .ctag {
+#symbolkey .tag, #symbolkey .ctag {
     margin: 0 0 0 5px;
 }
 
