@@ -93,7 +93,7 @@
         <div id="filterinfo" class="container-fluid" v-if="mode !== 'edit' && mode !== 'profile'">
             <div class="row">
                 <div class="col-md-1"></div>
-                <div class="col-md-8">
+                <div class="col-md-7">
                     <div class="filterwrapper">
                         <strong>Owner: </strong>
                         <span class="label label-default filtertag filtertagquestion">{{queryBuilder.questions}}</span>
@@ -108,13 +108,12 @@
                     </div>
                 </div>
                 <!-- Symbol Key -->
-                <div id="symbolkey" class="col-md-3">
-                    <p>
-                        <span class="badge answered" title="Question is already answered"><span aria-hidden="true" class="glyphicon glyphicon-ok"></span></span> Answered   
-                        <span class="badge rejected" title="Question was rejected"><span aria-hidden="true" class="glyphicon glyphicon-remove"></span></span> Rejected 
+                <div id="symbolkey" class="col-md-4">
+                        <span class="badge answerbadge unanswered" title="Question is NOT answered">Needs Help!</span>   
+                        <span class="badge answerbadge" title="Question is already answered">Answered</span>   
+                        <span class="badge answerbadge rejected" title="Question was rejected">Rejected</span> 
                         <span class="label label-default tag" title="StackOverflow defined tags">SO Tag</span> 
                         <span class="label label-default ctag" title="User defined tags">Custom Tag</span> 
-                    </p>
                 </div>
             </div>
         </div>
@@ -139,7 +138,7 @@
             </div>
             <div class="row datarow" v-for="doc in sortedDocs">
                 <div class="col-xs-12 col-md-1">
-                    <button v-on:click="edit(doc._id)" class="btn btn-default">Edit</button>
+                    <button v-on:click="edit(doc._id)" class="btn btn-primary">Edit</button>
                 </div>
                 <div class="col-xs-11 col-md-7">
                     <span class="question-title">
@@ -149,9 +148,7 @@
                     <a class="owner" :href="doc.question.owner.link" target="_new" title="question owner and reputation">{{ doc.question.owner.display_name }} ({{ doc.question.owner.reputation}})</a>
                 </div>
                 <div class="col-xs-1 col-md-1">
-                    <span class="badge" title="Number of answers">{{ doc.question.answer_count }} {{ doc.question.answer_count === 1 ? 'Answer' : 'Answers' }}</span>
-                    <span v-if="doc.answered" class="badge answered" title="Question is already answered"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></span>
-                    <span v-if="doc.rejected" class="badge rejected" title="Question was rejected"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></span>
+                    <span class="badge answerbadge" v-bind:class="{ rejected: doc.rejected, unanswered: !doc.answered }" title="Number of answers">{{ doc.question.answer_count }} {{ doc.question.answer_count === 1 ? 'Answer' : 'Answers' }}</span>
                 </div>
                 <div class="col-xs-12 col-md-3">
                     <span v-for="tag in doc.question.tags">
