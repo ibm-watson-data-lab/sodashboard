@@ -37,7 +37,7 @@ var setHash = function () {
       return '-'
     }
   })
-  console.log(hash)
+  console.log('hashes', hash)
   settingHash = true
   window.location.hash = hash
 }
@@ -55,27 +55,38 @@ var parseHash = function () {
           app.edit(match[0])
         }
       } else {
-        // [#, {questions}, {rejected}, {answered}, {search}, {tags}]
-        console.log(hashes)
+        // hashes: [#, {questions}, {rejected}, {answered}, {search}, {tags}]
+        console.log('hashes', hashes)
         settingHash = true // dont trigger performQuery, yet
         if (hashes.length > 1) app.queryBuilder.questions = hashes[1] === '-' ? 'unassigned' : hashes[1]
         if (hashes.length > 2) app.queryBuilder.rejected = (hashes[2] === 'true')
         if (hashes.length > 3) app.queryBuilder.answered = (hashes[3] === 'true')
         if (hashes.length > 4) app.queryBuilder.search = hashes[4] === '-' ? '' : decodeURIComponent(hashes[4])
-        app.search = app.queryBuilder.search
-
-        settingHash = false // let the last update trigger the performQuery
         if (hashes.length > 5) app.queryBuilder.tags = !hashes[5] ? [] : decodeURIComponent(hashes[5]).split(',')
+
+        app.search = app.queryBuilder.search
+        $.each($('.taglimitlist input'), function (index, input) {
+          var value = $(input).attr('id')
+          if (app.queryBuilder.tags.indexOf(value) > -1) {
+            $(input)[0].checked = true
+          } else {
+            $(input)[0].checked = false
+          }
+        })
+
+        settingHash = false // now we can performQuery
+        app.performQuery()
       }
     } else {
-      settingHash = true
+      settingHash = true // dont trigger performQuery, yet
+      app.queryBuilder.questions = 'unassigned'
       app.queryBuilder.rejected = false
       app.queryBuilder.answered = false
       app.queryBuilder.search = ''
       app.search = ''
       app.queryBuilder.tags = []
-      settingHash = false
-      app.queryBuilder.questions = 'unassigned'
+      settingHash = false // now we can performQuery
+      app.performQuery()
     }
   } else {
     settingHash = false
@@ -162,12 +173,6 @@ Vue.component('tags-typeahead', {
         db.put(doc).then(function (data) {
           doc._rev = data.rev;
           _this.customtags = '';
-
-          // if (app.doc && app.doc._id === id) {
-          //   app.doc = doc;
-          // } else if (app.profile && app.profile._id === id) {
-          //   app.profile = doc;
-          // }
         });
       }
     }
@@ -190,10 +195,13 @@ var app = new Vue({
     search: '',
     notetxt: '',
     alltags: [],
+    soingesttags: [],
+    sotags: [],
     mytags: [],
     taggedusers: [],
     customtagsfocus: false,
-    showNotes: false, 
+    showNotes: false,
+    loading: false,
     queryBuilder: {
       questions: 'unassigned', // unassigned / mine / all
       tagsmode: 'or',          // or / and
@@ -214,6 +222,7 @@ var app = new Vue({
   watch: {
     queryBuilder: {
       handler: function (val, oldVal) {
+        console.log('watch', settingHash)
         if (!settingHash) {
           this.performQuery()
         }
@@ -229,16 +238,16 @@ var app = new Vue({
       }
       return this.docs;
     },
-    distinctTags: function() {
-      // get distinct list of tags from tickets in the list
-      var obj = {};
-      for(var i in this.docs) {
-        for(var j in this.docs[i].question.tags) {
-          var tag = this.docs[i].question.tags[j];
-          obj[tag] = true;
-        }
-      }
-      return Object.keys(obj).sort();
+    distinctSOTags: function () {
+      return this.alltags.filter(function (t) {
+        return app.mytags.indexOf(t) === -1 && app.soingesttags.indexOf(t) === -1
+      })
+    },
+    distinctCustomTags: function () {
+      var tags = this.mytags.filter(function (t) {
+        return app.soingesttags.indexOf(t) === -1
+      })
+      return tags.concat(this.soingesttags).sort()
     },
     hasNotes: function () {
       if (this.docs) {
@@ -318,8 +327,6 @@ var app = new Vue({
       db.put(app.profile).then(function(data) {
         // return to unassigned mode
         app.profile._rev = data.rev;
-        // app.mode = 'unassigned';
-        // window.location.hash = '#unassigned';
         app.queryBuilder.questions = 'unassigned'
       });
     },
@@ -360,53 +367,53 @@ var app = new Vue({
         })
       }
     },
-    getAllTags: function () {
-      db.query('dashboard/alltags').then(function (resp) {
-        if (resp && resp.rows) {
-          app.alltags = (resp.rows[0].value || []).sort();
-        } else {
-          console.warn(resp);
-        }
-      }).catch(function (err) {
-        console.warn(err);
-      });
+    getMyTags: function () {
+      db.query('dashboard/usertags', {key: app.loggedinuser._id})
+        .then(function (resp) {
+          if (resp && resp.rows) {
+            app.mytags = resp.rows[0].value || []
+          } else {
+            app.mytags = []
+            console.warn(resp)
+          }
+        })
+        .catch(function (err) {
+          app.mytags = []
+          console.warn(err)
+        })
     },
-    allTickets: function() {
-      // get list of unassigned tickets, newest first
-      // db.query('dashboard/alltickets', {descending:true, include_docs:true}).then(function(data) {
-      //   app.docs = [];
-      //   for(var i in data.rows) {
-      //     app.docs.push(data.rows[i].doc);
-      //   }
-      //   app.mode = 'all';
-      //   app.queryBuilder.questions = 'all'
-      //   app.performQuery()
-      // });
+    getSOIngestTags: function () {
+      // TODO: get configured tags for soingest
+      app.soingesttags = [
+        'cloudant', 'ibm-cloudant', 'pixiedust', 'data-science-experience',
+        'compose', 'compose.io', 'apache-spark', 'jupyter-notebooks', 'ibm-bluemix'
+      ]
     },
-    myTickets: function() {
-      // get list of unassigned tickets, newest first
-      // db.query('dashboard/mytickets', {key: app.loggedinuser._id, include_docs:true}).then(function(data) {
-      //   app.docs = [];
-      //   for(var i in data.rows) {
-      //     app.docs.push(data.rows[i].doc);
-      //   }
-      //   app.mode = 'mytickets';
-      //   app.queryBuilder.questions = 'mine'
-      //   app.performQuery()
-      // });
-    },
-    unAssignedTickets: function() {
-      // get list of unassigned tickets, newest first
-      // db.query('dashboard/unassignedtickets', {include_docs:true, descending: true}).then(function(data) {
-      //   console.log('unAssignedTickets', data);
-      //   app.docs = [];
-      //   for(var i in data.rows) {
-      //     app.docs.push(data.rows[i].doc);
-      //   }
-      //   app.mode = 'unassigned';
-      //   app.queryBuilder.questions = 'unassigned'
-      //   app.performQuery()
-      // });
+    getAllTags: function (customtags) {
+      var compare = function (a, b) {
+        if (a.toLowerCase() < b.toLowerCase()) return -1
+        if (a.toLowerCase() > b.toLowerCase()) return 1
+        return 0
+      }
+      db.query('dashboard/alltags')
+        .then(function (resp) {
+          if (resp && resp.rows) {
+            app.alltags = (resp.rows[0].value || []).sort(compare)
+          } else {
+            console.warn(resp)
+            app.alltags = []
+          }
+        })
+        .catch(function (err) {
+          console.warn(err)
+          app.alltags = []
+          app.sotags = []
+        })
+
+      if (customtags) {
+        app.getMyTags()
+        app.getSOIngestTags()
+      }
     },
     onSyncChange: function(change) {
       // when we receive notification of a change
@@ -432,8 +439,7 @@ var app = new Vue({
           }
 
           // if we have a new unassigned ticket and we're in unassigned mode
-          // if (!intheList && app.mode === 'unassigned' && d.owner === null && d.status === 'new') {
-            if (!intheList && app.queryBuilder.questions === 'unassigned' && d.owner === null && d.status === 'new') {
+          if (!intheList && app.queryBuilder.questions === 'unassigned' && d.owner === null && d.status === 'new') {
             // add it to the top of our list
             app.docs.unshift(d);
           }
@@ -489,10 +495,8 @@ var app = new Vue({
         doc.assigned_by_name = app.loggedinuser.user_name;
         doc.assigned_at = new Date().toISOString();
         db.put(doc).then(function(reply) {
-          // if (app.mode === 'mytickets' && doc.owner !== app.loggedinuser.user_id) {
           if (app.queryBuilder.questions === 'mine' && doc.owner !== app.loggedinuser.user_id) {
             app.removeFromList(doc._id);
-          // } else if (app.mode === 'unassigned' && doc.owner) {
           } else if (app.queryBuilder.questions === 'unassigned' && doc.owner) {
             app.removeFromList(doc._id);
           } else {
@@ -673,39 +677,41 @@ var app = new Vue({
       q.sort = [ {'question.creation_date': 'desc'} ];
       return q;
     },
-    performQuery: function() {
+    performQuery: function () {
+      app.docs = []
+      app.loading = true
       setHash()
       var q = this.calculateQuery();
       console.log('query', JSON.stringify(app.queryBuilder))
-      db.find(q).then(function(data) {
+      db.find(q).then(function (data) {
         app.doSearch(function (docs) {
           if (docs) {
-            var ids = data.docs.map(function(doc) {
+            var ids = data.docs.map(function (doc) {
               return doc._id
             })
-            app.docs = docs.filter(function(doc) {
+            app.docs = docs.filter(function (doc) {
               return ids.indexOf(doc._id) !== -1
             })
           } else {
             app.docs = data.docs
           }
+          app.loading = false
           app.mode = 'search'
         })
       })
-
     },
-    selectAllTags: function() {
-      $.each($('#taglimitlist input'), function (index, input) {
+    selectAllTags: function () {
+      $.each($('.taglimitlist input:visible'), function (index, input) {
         $(input)[0].checked = true
       })
     },
-    clearAllTags: function() {
-      $.each($('#taglimitlist input'), function (index, input) {
+    clearAllTags: function () {
+      $.each($('.taglimitlist input'), function (index, input) {
         $(input)[0].checked = false
       })
     },
     selectMyTags: function () {
-      $.each($('#taglimitlist input'), function (index, input) {
+      $.each($('.taglimitlist input'), function (index, input) {
         var value = $(input).attr('id')
         if (app.mytags.indexOf(value) > -1) {
           $(input)[0].checked = true
@@ -714,15 +720,25 @@ var app = new Vue({
         }
       })
     },
+    showMoreTags: function () {
+      $('#sotags').collapse('toggle')
+      var b = $('.showmore-sotags')
+      if (b.text() === 'Show More') {
+        b.text('Show Less')
+      } else {
+        b.text('Show More')
+        $.each($('#sotags input'), function (index, input) {
+          $(input)[0].checked = false
+        })
+      }
+    },
     submitTags: function () {
+      settingHash = true
       app.queryBuilder.tags = []
-      $.each($('#taglimitlist input:checked'), function (index, input) {
+      $.each($('.taglimitlist input:checked'), function (index, input) {
         app.queryBuilder.tags.push($(input).attr('id'))
       })
-      
-    // },
-    // doNav: function (mode) {
-    //   $('.navbar-brand .glyphicon').attr('class', 'glyphicon glyphicon-refresh')
+      settingHash = false
     }
   }
 });
@@ -771,28 +787,10 @@ db.get('_local/user').then(function(data) {
       parseHash();
     }
   }).catch(function(userdataerr) {
-    console.log(userdataerr);
+    console.warn(userdataerr);
   });
 
-  db.query('dashboard/usertags', {key: app.loggedinuser._id}).then(function (resp) {
-    if (resp && resp.rows) {
-      app.mytags = resp.rows[0].value || [];
-    } else {
-      console.warn(resp);
-    }
-  }).catch(function (err) {
-    console.warn(err);
-  });
-
-  db.query('dashboard/alltags').then(function (resp) {
-    if (resp && resp.rows) {
-      app.alltags = (resp.rows[0].value || []).sort();
-    } else {
-      console.warn(resp);
-    }
-  }).catch(function (err) {
-    console.warn(err);
-  });
+  app.getAllTags(true)
 
   $(window).on('hashchange', function(evt) {
     parseHash();

@@ -15,7 +15,7 @@
 </head>
 
 <body>
-    <div id="app">
+    <div id="app" v-cloak>
         <nav class="navbar navbar-inverse navbar-fixed-top">
             <div class="container-fluid">
                 <div class="navbar-header">
@@ -36,16 +36,16 @@
                                 Owner <span class="caret"></span>
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="dropdownAssignedTo">
-                                <li><a v-on:click="queryBuilder.questions='unassigned'">Unassigned</a></li>
-                                <li><a v-on:click="queryBuilder.questions='mine'">Mine</a></li>
-                                <li><a v-on:click="queryBuilder.questions='all'">All</a></li>
+                                <li><a v-on:click="queryBuilder.questions='unassigned'"><span v-if="queryBuilder.questions=='unassigned'" class="glyphicon glyphicon-ok" aria-hidden="true"></span> Unassigned</a></li>
+                                <li><a v-on:click="queryBuilder.questions='mine'"><span v-if="queryBuilder.questions=='mine'" class="glyphicon glyphicon-ok" aria-hidden="true"></span> Mine</a></li>
+                                <li><a v-on:click="queryBuilder.questions='all'"><span v-if="queryBuilder.questions=='all'" class="glyphicon glyphicon-ok" aria-hidden="true"></span> All</a></li>
                             </ul>
                         </li>
                         <li>
                             <a type="button" class="filtertagsdropdown" data-toggle="modal" data-target="#tagModal">Tags <span class="caret"></span></a>
                         </li>
                         <li>
-                            <a class="showfilter">Show:</a>
+                            <a class="showfilter">Include:</a>
                         </li>
                         <li>
                             <label class="checkbox-inline filterinput" style="margin-top:14px;color:#9d9d9d">
@@ -67,7 +67,7 @@
                         <li>
                             <div id="syncStatus">
                                 <span v-if="syncInProgress">
-                                    <span class="glyphicon glyphicon-flash" aria-hidden="true"></span>
+                                    <span class="glyphicon glyphicon-flash blink" aria-hidden="true"></span>
                                 </span>
                                 <span v-if="syncError" class="syncerror">
                                     <span class="glyphicon glyphicon-ban-circle" aria-hidden="true"></span>
@@ -135,6 +135,9 @@
                         <span v-if="!hasNotes" class="btn btn-primary align-bottom" disabled>No Notes</span>
                     </h2>
                 </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 text-center loader" v-if="loading"><span class="glyphicon glyphicon-refresh spin"></span></div>
             </div>
             <div class="row datarow" v-for="doc in sortedDocs">
                 <div class="col-xs-12 col-md-1">
@@ -421,13 +424,22 @@
                                 <button type="button" class="btn btn-default" v-on:click="selectMyTags">Select Mine</button>
                                 <button type="button" class="btn btn-default" v-on:click="selectAllTags">Select All</button>
                                 <button type="button" class="btn btn-default" v-on:click="clearAllTags">Clear</button>
+                                <button type="button" class="btn btn-default showmore-sotags" v-on:click="showMoreTags">Show More</button>
                             </div>
                             <div class="modal-body">
-                                <ul id="taglimitlist">
-                                    <li v-for="tag in alltags">
+                                <ul class="taglimitlist">
+                                    <li v-for="tag in distinctCustomTags">
                                         <label class="checkbox-inline"><input type="checkbox" :id="tag">{{tag}}</label>
                                     </li>
                                 </ul>
+
+                                <div id="sotags" class="collapse">
+                                    <ul class="taglimitlist">
+                                        <li v-for="tag in distinctSOTags">
+                                            <label class="checkbox-inline"><input type="checkbox" :id="tag">{{tag}}</label>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-default" v-on:click="submitTags" data-dismiss="modal">Submit</button>
