@@ -191,38 +191,18 @@ h2 .badge {
     to { visibility: hidden; }
 }
 
-#filterinfo {
-    position: sticky;
-    top: 51px;
-    margin: -20px;
-    z-index: 100;
-}
-
 @media all and (max-width:768px) {
-    #filterinfo {
-        top: 50px;
-    }
-    #docslist {
-        padding-top: 25px;
-    }
-    #symbolkey,
-    .filterwrapper {
-        margin-left: 30px;
-    }
     #symbolkey {
         margin-top: 10px;
     }
 }
 
-@media all and (min-width:768px) and (max-width: 1067px) {
-    #filterinfo {
-        top: 101px;
-    }
-    #docslist {
-        margin-top: 80px;
-    }
-    #symbolkey,
-    .filterwrapper {
-        margin-left: 30px;
-    }
+#app > div:first-child.navbar {
+    position: sticky;
+    top: 0;
+    margin-top: -70px;
+}
+#filterinfo {
+    top: 0px;
+    margin-bottom: -1px;
 }

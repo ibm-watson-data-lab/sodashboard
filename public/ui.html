@@ -16,7 +16,8 @@
 
 <body>
     <div id="app" v-cloak>
-        <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar navbar-inverse navbar-fixed-top">
+        <nav>
             <div class="container-fluid">
                 <div class="navbar-header">
                     <button type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false" class="navbar-toggle collapsed">
@@ -116,6 +117,7 @@
                         <span class="label label-default ctag" title="User defined tags">Custom Tag</span> 
                 </div>
             </div>
+        </div>
         </div>
         <!-- list of documents -->
         <div v-if="mode !== 'edit' && mode !== 'profile'" class="container" id="docslist">
