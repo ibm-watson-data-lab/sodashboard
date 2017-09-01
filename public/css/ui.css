@@ -1,4 +1,7 @@
-
+html, body {
+    margin: 0;
+    padding: 0;
+}
 .badge {
     background-color: #337ab7;
 }
@@ -200,7 +203,6 @@ h2 .badge {
 #app > div:first-child.navbar {
     position: sticky;
     top: 0;
-    margin-top: -70px;
 }
 #filterinfo {
     top: 0px;

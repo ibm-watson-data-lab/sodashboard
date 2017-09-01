@@ -306,17 +306,21 @@ var app = new Vue({
       });
     },
     profileEditor: function(obj) {
+      settingHash = true
+      app.queryBuilder.questions = ''
       if (obj && !obj.clientX) { // make sure this isn't a MouseEvent 
+        window.location.hash = '#profile';
         app.profile = obj;
         app.mode = 'profile';
-        window.location.hash = '#profile';
+        settingHash = false
       } else {
         // load the user profile
         db.get(app.loggedinuser._id).then(function (data) {
           // enable the profile editor
+          window.location.hash = '#profile';
           app.profile = data;
           app.mode = 'profile';
-          window.location.hash = '#profile';
+          settingHash = false
         });
       }
 
