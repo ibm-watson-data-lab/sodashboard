@@ -32,17 +32,17 @@
 
                     <ul class="nav navbar-nav">
                         <li class="dropdown">
-                            <a class="dropdown-toggle" type="button" id="dropdownAssignedTo" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                            <a href="javascript:void(0)"class="dropdown-toggle" type="button" id="dropdownAssignedTo" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                                 Owner <span class="caret"></span>
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="dropdownAssignedTo">
-                                <li><a v-on:click="queryBuilder.questions='unassigned'"><span v-if="queryBuilder.questions=='unassigned'" class="glyphicon glyphicon-ok" aria-hidden="true"></span> Unassigned</a></li>
-                                <li><a v-on:click="queryBuilder.questions='mine'"><span v-if="queryBuilder.questions=='mine'" class="glyphicon glyphicon-ok" aria-hidden="true"></span> Mine</a></li>
-                                <li><a v-on:click="queryBuilder.questions='all'"><span v-if="queryBuilder.questions=='all'" class="glyphicon glyphicon-ok" aria-hidden="true"></span> All</a></li>
+                                <li><a href="javascript:void(0)" v-on:click="queryBuilder.questions='unassigned'"><span v-if="queryBuilder.questions=='unassigned'" class="glyphicon glyphicon-ok" aria-hidden="true"></span> Unassigned</a></li>
+                                <li><a href="javascript:void(0)" v-on:click="queryBuilder.questions='mine'"><span v-if="queryBuilder.questions=='mine'" class="glyphicon glyphicon-ok" aria-hidden="true"></span> Mine</a></li>
+                                <li><a href="javascript:void(0)" v-on:click="queryBuilder.questions='all'"><span v-if="queryBuilder.questions=='all'" class="glyphicon glyphicon-ok" aria-hidden="true"></span> All</a></li>
                             </ul>
                         </li>
                         <li>
-                            <a type="button" class="filtertagsdropdown" data-toggle="modal" data-target="#tagModal">Tags <span class="caret"></span></a>
+                            <a id="tagsbutton" href="javascript:void(0)" type="button" class="filtertagsdropdown" data-toggle="modal" data-target="#tagModal">Tags <span class="caret"></span></a>
                         </li>
                         <li>
                             <a class="showfilter">Include:</a>
@@ -413,7 +413,7 @@
             </div>
             <!-- end profile editor -->
 
-            <div id="tagModal" class="modal fade" role="dialog">
+            <div id="tagModal" class="modal" role="dialog">
                     <div class="modal-dialog">
                         <!-- Modal content-->
                         <div class="modal-content">
@@ -421,7 +421,7 @@
                                 <button type="button" class="close" data-dismiss="modal">&times;</button>
                                 <h4 class="modal-title">Limit searches to these tags</h4>
                                 <br>
-                                <button type="button" class="btn btn-default" v-on:click="selectMyTags">Select Mine</button>
+                                <button id="selectmine" type="button" class="btn btn-default" v-on:click="selectMyTags">Select Mine</button>
                                 <button type="button" class="btn btn-default" v-on:click="selectAllTags">Select All</button>
                                 <button type="button" class="btn btn-default" v-on:click="clearAllTags">Clear</button>
                                 <button type="button" class="btn btn-default showmore-sotags" v-on:click="showMoreTags">Show More</button>
