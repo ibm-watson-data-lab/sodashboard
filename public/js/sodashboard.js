@@ -800,3 +800,20 @@ db.get('_local/user').then(function(data) {
   // if there's no _local/user document, you're not logged in
   window.location = 'index.html';
 });
+
+$(document).ready(function() {
+
+  $('#tagModal').on('show.bs.modal', function (e) {
+    console.log('show modal!');
+    setTimeout(function() {
+      $('#tagsbutton').blur();
+      $('#selectmine').focus();
+    }, 100);
+
+  })
+  
+  $('#tagModal').on('hide.bs.modal', function (e) {
+    console.log('hide modal!');
+    $('#tagsbutton').focus();
+  })
+})
