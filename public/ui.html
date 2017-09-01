@@ -92,8 +92,8 @@
         <!---->
         <div id="filterinfo" class="container-fluid" v-if="mode !== 'edit' && mode !== 'profile'">
             <div class="row">
-                <div class="col-md-1"></div>
-                <div class="col-md-7">
+                <div class="col-sm-1"></div>
+                <div class="col-sm-7">
                     <div class="filterwrapper">
                         <strong>Owner: </strong>
                         <span class="label label-default filtertag filtertagquestion">{{queryBuilder.questions}}</span>
@@ -108,7 +108,7 @@
                     </div>
                 </div>
                 <!-- Symbol Key -->
-                <div id="symbolkey" class="col-md-4">
+                <div id="symbolkey" class="col-sm-3">
                         <span class="badge answerbadge unanswered" title="Question is NOT answered">Needs Help!</span>   
                         <span class="badge answerbadge" title="Question is already answered">Answered</span>   
                         <span class="badge answerbadge rejected" title="Question was rejected">Rejected</span> 
@@ -118,7 +118,7 @@
             </div>
         </div>
         <!-- list of documents -->
-        <div v-if="mode !== 'edit' && mode !== 'profile'" class="container">
+        <div v-if="mode !== 'edit' && mode !== 'profile'" class="container" id="docslist">
             <div class="row">
                 <div class="col-md-10">
                     <h2>
