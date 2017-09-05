@@ -27,23 +27,69 @@ var validateAssignment = function(sel, inp) {
   }
 };
 
-var parseHash = function() {
-  if (window.location.hash && window.location.hash !== '#') {
-    var hash = window.location.hash.replace(/^#/, '');
-    if (hash === 'unassigned') {
-      app.unAssignedTickets();
-    } else if (hash === 'profile') {
-      app.profileEditor();
-    } else if (hash === 'mytickets') {
-      app.myTickets();
-    } else if (hash.match(/^edit/)) {
-      var match = hash.match(/[0-9]+$/);
-      if (match) {
-        app.edit(match[0]);
+var settingHash = false
+var setHash = function () {
+  var schema = '#/{questions}/{rejected}/{answered}/{search}/{tags}'
+  var hash = schema.replace(/\{(.+?)\}/g, function ($0, $1) {
+    if (app.queryBuilder.hasOwnProperty($1)) {
+      return encodeURIComponent(app.queryBuilder[$1] || '-')
+    } else {
+      return '-'
+    }
+  })
+  console.log('hashes', hash)
+  settingHash = true
+  window.location.hash = hash
+}
+
+var parseHash = function () {
+  if (!settingHash) {
+    if (window.location.hash && window.location.hash !== '#') {
+      // schema: '#/{questions}/{rejected}/{answered}/{search}/{tags}'
+      var hashes = window.location.hash.split('/')
+      if (hashes[0] === '#profile') {
+        app.profileEditor()
+      } else if (hashes[0].startsWith('#edit?')) {
+        var match = hashes[0].match(/[0-9]+$/)
+        if (match) {
+          app.edit(match[0])
+        }
+      } else {
+        // hashes: [#, {questions}, {rejected}, {answered}, {search}, {tags}]
+        console.log('hashes', hashes)
+        settingHash = true // dont trigger performQuery, yet
+        if (hashes.length > 1) app.queryBuilder.questions = hashes[1] === '-' ? 'unassigned' : hashes[1]
+        if (hashes.length > 2) app.queryBuilder.rejected = (hashes[2] === 'true')
+        if (hashes.length > 3) app.queryBuilder.answered = (hashes[3] === 'true')
+        if (hashes.length > 4) app.queryBuilder.search = hashes[4] === '-' ? '' : decodeURIComponent(hashes[4])
+        if (hashes.length > 5) app.queryBuilder.tags = !hashes[5] ? [] : decodeURIComponent(hashes[5]).split(',')
+
+        app.search = app.queryBuilder.search
+        $.each($('.taglimitlist input'), function (index, input) {
+          var value = $(input).attr('id')
+          if (app.queryBuilder.tags.indexOf(value) > -1) {
+            $(input)[0].checked = true
+          } else {
+            $(input)[0].checked = false
+          }
+        })
+
+        settingHash = false // now we can performQuery
+        app.performQuery()
       }
+    } else {
+      settingHash = true // dont trigger performQuery, yet
+      app.queryBuilder.questions = 'unassigned'
+      app.queryBuilder.rejected = false
+      app.queryBuilder.answered = false
+      app.queryBuilder.search = ''
+      app.search = ''
+      app.queryBuilder.tags = []
+      settingHash = false // now we can performQuery
+      app.performQuery()
     }
   } else {
-    app.mode = 'unassigned';
+    settingHash = false
   }
 }
 
@@ -127,12 +173,6 @@ Vue.component('tags-typeahead', {
         db.put(doc).then(function (data) {
           doc._rev = data.rev;
           _this.customtags = '';
-
-          // if (app.doc && app.doc._id === id) {
-          //   app.doc = doc;
-          // } else if (app.profile && app.profile._id === id) {
-          //   app.profile = doc;
-          // }
         });
       }
     }
@@ -143,7 +183,7 @@ var app = new Vue({
   el: '#app',
   data: {
     doc: null,
-    docs: null,
+    docs: [],
     userlist: null,
     mode: 'unassigned',
     numDocs: null,
@@ -155,9 +195,22 @@ var app = new Vue({
     search: '',
     notetxt: '',
     alltags: [],
+    soingesttags: [],
+    sotags: [],
+    mytags: [],
     taggedusers: [],
     customtagsfocus: false,
-    showNotes: false, 
+    showNotes: false,
+    loading: false,
+    queryBuilder: {
+      questions: 'unassigned', // unassigned / mine / all
+      tagsmode: 'or',          // or / and
+      tags: [],                // array of tags to match
+      rejected: false,         // false / true
+      answered: false,         // false / true
+      search: '',              // free-text search term
+      sort: 'newestfirst'      // newestfirst
+    },
     dateDisplayOpts: {
       weekday: 'long',
       hour: 'numeric', 
@@ -165,6 +218,17 @@ var app = new Vue({
       hour12: true,
       month: 'long', 
       day: 'numeric' }
+  },
+  watch: {
+    queryBuilder: {
+      handler: function (val, oldVal) {
+        console.log('watch', settingHash)
+        if (!settingHash) {
+          this.performQuery()
+        }
+      },
+      deep: true
+    }
   },
   computed: {
     sortedDocs: function () {
@@ -174,16 +238,25 @@ var app = new Vue({
       }
       return this.docs;
     },
-    distinctTags: function() {
-      // get distinct list of tags from tickets in the list
-      var obj = {};
-      for(var i in this.docs) {
-        for(var j in this.docs[i].question.tags) {
-          var tag = this.docs[i].question.tags[j];
-          obj[tag] = true;
-        }
+    distinctSOTags: function () {
+      return this.alltags.filter(function (t) {
+        return app.mytags.indexOf(t) === -1 && app.soingesttags.indexOf(t) === -1
+      })
+    },
+    distinctCustomTags: function () {
+      var tags = this.mytags.filter(function (t) {
+        return app.soingesttags.indexOf(t) === -1
+      })
+      return tags.concat(this.soingesttags).sort()
+    },
+    hasNotes: function () {
+      if (this.docs) {
+        return this.docs.some(function (doc) {
+          return doc.notes && doc.notes.length > 0
+        })
+      } else {
+        return false
       }
-      return Object.keys(obj).sort();
     }
   },
   methods: {
@@ -233,17 +306,21 @@ var app = new Vue({
       });
     },
     profileEditor: function(obj) {
+      settingHash = true
+      app.queryBuilder.questions = ''
       if (obj && !obj.clientX) { // make sure this isn't a MouseEvent 
+        window.location.hash = '#profile';
         app.profile = obj;
         app.mode = 'profile';
-        window.location.hash = '#profile';
+        settingHash = false
       } else {
         // load the user profile
         db.get(app.loggedinuser._id).then(function (data) {
           // enable the profile editor
+          window.location.hash = '#profile';
           app.profile = data;
           app.mode = 'profile';
-          window.location.hash = '#profile';
+          settingHash = false
         });
       }
 
@@ -254,8 +331,7 @@ var app = new Vue({
       db.put(app.profile).then(function(data) {
         // return to unassigned mode
         app.profile._rev = data.rev;
-        app.mode = 'unassigned';
-        window.location.hash = '#unassigned';
+        app.queryBuilder.questions = 'unassigned'
       });
     },
     findTaggedUsers: function () {
@@ -295,47 +371,53 @@ var app = new Vue({
         })
       }
     },
-    getAllTags: function () {
-      db.query('dashboard/alltags').then(function (resp) {
-        if (resp && resp.rows) {
-          app.alltags = resp.rows[0].value || [];
-        } else {
-          console.warn(resp);
-        }
-      }).catch(function (err) {
-        console.warn(err);
-      });
+    getMyTags: function () {
+      db.query('dashboard/usertags', {key: app.loggedinuser._id})
+        .then(function (resp) {
+          if (resp && resp.rows) {
+            app.mytags = resp.rows[0].value || []
+          } else {
+            app.mytags = []
+            console.warn(resp)
+          }
+        })
+        .catch(function (err) {
+          app.mytags = []
+          console.warn(err)
+        })
     },
-    allTickets: function() {
-      // get list of unassigned tickets, newest first
-      db.query('dashboard/alltickets', {descending:true, include_docs:true}).then(function(data) {
-        app.docs = [];
-        for(var i in data.rows) {
-          app.docs.push(data.rows[i].doc);
-        }
-        app.mode = 'all';
-      });
+    getSOIngestTags: function () {
+      // TODO: get configured tags for soingest
+      app.soingesttags = [
+        'cloudant', 'ibm-cloudant', 'pixiedust', 'data-science-experience',
+        'compose', 'compose.io', 'apache-spark', 'jupyter-notebooks', 'ibm-bluemix'
+      ]
     },
-    myTickets: function() {
-      // get list of unassigned tickets, newest first
-      db.query('dashboard/mytickets', {key: app.loggedinuser._id, include_docs:true}).then(function(data) {
-        app.docs = [];
-        for(var i in data.rows) {
-          app.docs.push(data.rows[i].doc);
-        }
-        app.mode = 'mytickets';
-      });
-    },
-    unAssignedTickets: function() {
-      // get list of unassigned tickets, newest first
-      db.query('dashboard/unassignedtickets', {include_docs:true, descending: true}).then(function(data) {
-        console.log('unAssignedTickets', data);
-        app.docs = [];
-        for(var i in data.rows) {
-          app.docs.push(data.rows[i].doc);
-        }
-        app.mode = 'unassigned';
-      });
+    getAllTags: function (customtags) {
+      var compare = function (a, b) {
+        if (a.toLowerCase() < b.toLowerCase()) return -1
+        if (a.toLowerCase() > b.toLowerCase()) return 1
+        return 0
+      }
+      db.query('dashboard/alltags')
+        .then(function (resp) {
+          if (resp && resp.rows) {
+            app.alltags = (resp.rows[0].value || []).sort(compare)
+          } else {
+            console.warn(resp)
+            app.alltags = []
+          }
+        })
+        .catch(function (err) {
+          console.warn(err)
+          app.alltags = []
+          app.sotags = []
+        })
+
+      if (customtags) {
+        app.getMyTags()
+        app.getSOIngestTags()
+      }
     },
     onSyncChange: function(change) {
       // when we receive notification of a change
@@ -361,7 +443,7 @@ var app = new Vue({
           }
 
           // if we have a new unassigned ticket and we're in unassigned mode
-          if (!intheList && app.mode === 'unassigned' && d.owner === null && d.status === 'new') {
+          if (!intheList && app.queryBuilder.questions === 'unassigned' && d.owner === null && d.status === 'new') {
             // add it to the top of our list
             app.docs.unshift(d);
           }
@@ -417,9 +499,9 @@ var app = new Vue({
         doc.assigned_by_name = app.loggedinuser.user_name;
         doc.assigned_at = new Date().toISOString();
         db.put(doc).then(function(reply) {
-          if (app.mode === 'mytickets' && doc.owner !== app.loggedinuser.user_id) {
+          if (app.queryBuilder.questions === 'mine' && doc.owner !== app.loggedinuser.user_id) {
             app.removeFromList(doc._id);
-          } else if (app.mode === 'unassigned' && doc.owner) {
+          } else if (app.queryBuilder.questions === 'unassigned' && doc.owner) {
             app.removeFromList(doc._id);
           } else {
             doc._rev = reply.rev;
@@ -504,20 +586,163 @@ var app = new Vue({
         window.location = 'index.html';
       })
     },
-    doSearch: function() {
-      console.log('search', app.search)
-      db.search({
-        query: app.search,
-        fields: ['question.title', 'question.tags'],
-        include_docs: true
-      }).then(function(data) {
-        app.docs = [];
-        for(var i in data.rows) {
-          app.docs.push(data.rows[i].doc);
+    doSearch: function(callback) {
+      if (app.queryBuilder.search) {
+        db.search({
+          query: app.queryBuilder.search,
+          fields: ['question.title', 'question.tags', 'question.body'],
+          include_docs: true
+        }).then(function (data) {
+          if (typeof callback === 'function') {
+            callback(data.rows.map(function (r) { return r.doc }))
+          } else {
+            app.docs = [];
+            for (var i in data.rows) {
+                app.docs.push(data.rows[i].doc);
+            }
+            app.mode = 'search';
+          }
+        })
+      } else if (typeof callback === 'function') {
+        callback(null)
+      }
+    },
+    calculateQuery: function() {
+      var qb = this.queryBuilder;
+      var q = {
+        selector: {},
+        sort: undefined
+      };
+
+      // tags
+      var tagsclause= [];
+      for (var i in qb.tags) {
+        var obj = { 
+          '$or': [
+            {
+              'custom_tags': {
+                '$elemMatch': {
+                  '$eq': qb.tags[i]
+                }
+               }
+             },
+             {
+              'question.tags': {
+                '$elemMatch': {
+                  '$eq': qb.tags[i]
+                }
+               }
+             }
+          ]
+        };
+        tagsclause.push(obj);
+      }
+
+      // build selector
+      var selector = {
+        '$and': [ 
+          { 'question.creation_date': {'$gt': 0 }}
+        ]
+      };
+      if (qb.tags.length > 0) {
+        var obj = {};
+        obj['$' + qb.tagsmode] = tagsclause;
+        selector['$and'].push(obj);
+      }
+
+      // add rejected
+      if (!qb.rejected) {
+        var obj = { 'rejected': { '$exists': false}};
+        selector['$and'].push(obj);
+      }
+
+      // add answered
+      if (!qb.answered) {
+        var obj = { 'answered': { '$exists': false}}
+        selector['$and'].push(obj)
+      }
+
+      // add questions
+      selector['$and'].push({ 'type': 'question'})
+      switch(qb.questions) {
+        case 'unassigned': 
+          selector['$and'].push({ 'owner': { '$type': 'null' }})
+        break;
+        case 'mine': 
+          selector['$and'].push({ 'owner': this.loggedinuser._id })
+        break;
+        default: break;
+      }
+
+      // add to q
+      q.selector = selector;
+
+      // add sort
+      q.sort = [ {'question.creation_date': 'desc'} ];
+      return q;
+    },
+    performQuery: function () {
+      app.docs = []
+      app.loading = true
+      setHash()
+      var q = this.calculateQuery();
+      console.log('query', JSON.stringify(app.queryBuilder))
+      db.find(q).then(function (data) {
+        app.doSearch(function (docs) {
+          if (docs) {
+            var ids = data.docs.map(function (doc) {
+              return doc._id
+            })
+            app.docs = docs.filter(function (doc) {
+              return ids.indexOf(doc._id) !== -1
+            })
+          } else {
+            app.docs = data.docs
+          }
+          app.loading = false
+          app.mode = 'search'
+        })
+      })
+    },
+    selectAllTags: function () {
+      $.each($('.taglimitlist input:visible'), function (index, input) {
+        $(input)[0].checked = true
+      })
+    },
+    clearAllTags: function () {
+      $.each($('.taglimitlist input'), function (index, input) {
+        $(input)[0].checked = false
+      })
+    },
+    selectMyTags: function () {
+      $.each($('.taglimitlist input'), function (index, input) {
+        var value = $(input).attr('id')
+        if (app.mytags.indexOf(value) > -1) {
+          $(input)[0].checked = true
+        } else {
+          $(input)[0].checked = false
         }
-        app.mode = 'search';
-      });
-      
+      })
+    },
+    showMoreTags: function () {
+      $('#sotags').collapse('toggle')
+      var b = $('.showmore-sotags')
+      if (b.text() === 'Show More') {
+        b.text('Show Less')
+      } else {
+        b.text('Show More')
+        $.each($('#sotags input'), function (index, input) {
+          $(input)[0].checked = false
+        })
+      }
+    },
+    submitTags: function () {
+      settingHash = true
+      app.queryBuilder.tags = []
+      $.each($('.taglimitlist input:checked'), function (index, input) {
+        app.queryBuilder.tags.push($(input).attr('id'))
+      })
+      settingHash = false
     }
   }
 });
@@ -527,6 +752,17 @@ db.get('_local/user').then(function(data) {
 
   // set the logged in user
   app.loggedinuser = data.user;
+
+  // create the index
+  db.createIndex({
+    index: {
+      fields: ['question.creation_date']
+    }
+  }).then(function (result) {
+    console.log('Index creation success', result);
+  }).catch(function (err) {
+    console.log('Index creation error', err);
+  });
 
   // sync with Cloudant
   var auth = data.username + ':' + data.password;
@@ -551,12 +787,14 @@ db.get('_local/user').then(function(data) {
       app.profileEditor(userdata);
     } else {
       // parse the hash
+      // console.log('pouchdb user id');
       parseHash();
     }
   }).catch(function(userdataerr) {
-    console.log(userdataerr);
+    console.warn(userdataerr);
   });
 
+  app.getAllTags(true)
 
   $(window).on('hashchange', function(evt) {
     parseHash();
@@ -566,3 +804,20 @@ db.get('_local/user').then(function(data) {
   // if there's no _local/user document, you're not logged in
   window.location = 'index.html';
 });
+
+$(document).ready(function() {
+
+  $('#tagModal').on('show.bs.modal', function (e) {
+    console.log('show modal!');
+    setTimeout(function() {
+      $('#tagsbutton').blur();
+      $('#selectmine').focus();
+    }, 100);
+
+  })
+  
+  $('#tagModal').on('hide.bs.modal', function (e) {
+    console.log('hide modal!');
+    $('#tagsbutton').focus();
+  })
+})

@@ -26,7 +26,7 @@ body {
   white-space: normal;
 }
 
-.ctag {
+/* .ctag {
   background-color: #e4e4e4;
   border: 1px solid #ccc;
   border-radius: 20px;
@@ -37,16 +37,16 @@ body {
   line-height: 24px;
   margin-right: 6px;
   padding: 0 12px;
-}
+} */
 
-.row .ctag {
+/* .row .ctag {
   border-radius: 3px;
   display: initial;
   font-size: 10px;
   line-height: initial;
   margin-right: 5px;
   padding: 2px 5px;
-}
+} */
 
 .owner:link {
   color: #666;

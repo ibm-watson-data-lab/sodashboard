@@ -1,0 +1,210 @@
+html, body {
+    margin: 0;
+    padding: 0;
+}
+.badge {
+    background-color: #337ab7;
+}
+.badge.answerbadge, #answerbadgecol>.btn {
+    font-weight: 200;
+    background-color: #558BB8;
+}
+#answerbadgecol>.badge.answerbadge {
+    width: 100%;
+}
+.badge.unanswered, #answerbadgecol>.btn.unanswered {
+    background-color: #23BE23;
+    font-weight: 400;
+}
+.badge.rejected, #answerbadgecol>.btn.rejected {
+    background-color: #AAA;
+    font-weight: 200;
+}
+
+h2 .badge {
+    margin-left: 20px;
+}
+  
+.tag,
+.ctag,
+.filtertag {
+    font-weight: 200;
+    display: inline-block;
+}
+.tag {
+    border: 1px solid #777;
+}
+.ctag {
+    background-color: #e4e4e4;
+    border: 1px solid #ccc;
+    color: #333333;
+}
+
+.filtertag {
+    color: #ccc;
+    margin-right: 2px;
+    white-space: nowrap;
+}
+
+.filtertagquestion {
+    text-transform: capitalize;
+}
+
+.datarow {
+    padding-top: 8px;
+    margin-bottom: 24px;
+    border-top: 2px solid #eee;
+}
+
+.question-title {
+    font-size: 115%;
+    font-weight: 400;
+}
+
+.navbar {
+    margin-bottom: 0px;
+}
+
+#filterinfo {
+    background-color: #9d9d9d;
+    position: relative;
+    top: -20px;
+    padding: 4px 0px 4px 0px;
+}
+
+.taglimitlist {
+    margin: 0;
+    padding: 0;
+}
+
+
+#sotags .taglimitlist {
+    margin: 15px 0 0 0;
+    padding: 15px 0;
+    border-top: 1px solid #e5e5e5;
+}
+
+.taglimitlist li {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: inline-block;
+    width: 25%;
+}
+
+#tagModal .modal-body {
+    max-height: 70vh;
+    overflow: scroll;
+}
+
+#tagModal .modal-dialog {
+    min-width: 40vw;
+}
+
+#dropdownAssignedTo,
+.filtertagsdropdown {
+    cursor: pointer;
+}
+
+.showfilter {
+    cursor: default;
+}
+.showfilter:hover {
+    color: #9d9d9d !important;
+}
+.filterinput:hover {
+    cursor: pointer;
+    color: #fff !important;
+}
+
+#symbolkey {
+    font-size: 0.9em;
+}
+#symbolkey .tag, #symbolkey .ctag {
+    margin: 0 0 0 5px;
+}
+
+.filterwrapper {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.filterwrapper.tagscontainer {
+    max-width: 50vw;
+    max-height: 25vh;
+    overflow-y: auto;
+    vertical-align: top;
+}
+
+#dropdownAssignedTo ~ .dropdown-menu > li > a {
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
+#dropdownAssignedTo ~ .dropdown-menu > li > a > .glyphicon {
+    margin-left: -20px;
+}
+
+.showmore-sotags {
+    float: right;
+}
+
+.loader {
+    font-size: 3em;
+    margin-top: 50px;
+}
+
+.spin {
+    display: inline-block;
+    margin: 5px;
+    -webkit-animation: spin-anim 1s  linear infinite;
+    animation: spin-anim 1s  linear infinite;
+}
+@-webkit-keyframes spin-anim {
+    from { -webkit-transform: rotate(0deg) }
+    to { -webkit-transform: rotate(360deg) }
+}
+@-moz-keyframes spin-anim {
+    from { -moz-transform: rotate(0deg) }
+    to { -moz-transform: rotate(360deg) }
+}
+@-ms-keyframes spin-anim {
+    from { -ms-transform: rotate(0deg) }
+    to { -ms-transform:rotate(360deg) }
+}
+@keyframes spin-anim {
+    from { transform: rotate(0deg) }
+    to { transform: rotate(360deg) }
+}
+
+.blink {
+    -webkit-animation: blink-anim 1s steps(5, start) infinite;
+    animation: blink-anim 1s steps(5, start) infinite;
+}
+@-webkit-keyframes blink-anim {
+    to { visibility: hidden; }
+}
+@-moz-keyframes blink-anim {
+    to { visibility: hidden; }
+}
+@-ms-keyframes blink-anim {
+    to { visibility: hidden; }
+}
+@keyframes blink-anim {
+    to { visibility: hidden; }
+}
+
+@media all and (max-width:768px) {
+    #symbolkey {
+        margin-top: 10px;
+    }
+}
+
+#app > div:first-child.navbar {
+    position: sticky;
+    top: 0;
+}
+#filterinfo {
+    top: 0px;
+    margin-bottom: -1px;
+}
