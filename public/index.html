@@ -29,7 +29,7 @@
                         <span class="glyphicon glyphicon-equalizer" aria-hidden="true"></span> SO Dashboard
                     </a>
                 </div>
-                <div id="bs-example-navbar-collapse-1" class="collapse navbar-collapse">
+                <div id="bs-example-navbar-collapse-1" class="collapse navbar-collapse" v-if="mode !== 'loggedout'">
 
                     <ul class="nav navbar-nav">
                         <li class="dropdown">
@@ -91,7 +91,7 @@
             </div>
         </nav>
         <!---->
-        <div id="filterinfo" class="container-fluid" v-if="mode !== 'edit' && mode !== 'profile'">
+        <div id="filterinfo" class="container-fluid" v-if="mode !== 'edit' && mode !== 'profile' && mode !== 'loggedout'">
             <div class="row">
                 <div class="col-sm-1"></div>
                 <div class="col-sm-7">
@@ -119,8 +119,17 @@
             </div>
         </div>
         </div>
+        <!-- not logged in -->
+        <div v-if="mode === 'loggedout'" class="container">
+            <div class="row">
+                <div class="col-md-10">
+                    <h2>You are currently logged out</h2>
+                    <h3>Login with <code>/sodashboard</code> in Slack</h3>
+                </div>
+            </div>
+        </div>
         <!-- list of documents -->
-        <div v-if="mode !== 'edit' && mode !== 'profile'" class="container" id="docslist">
+        <div v-if="mode !== 'edit' && mode !== 'profile' && mode !== 'loggedout'" class="container" id="docslist">
             <div class="row">
                 <div class="col-md-10">
                     <h2>

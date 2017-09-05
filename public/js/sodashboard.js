@@ -29,6 +29,7 @@ var validateAssignment = function(sel, inp) {
 
 var settingHash = false
 var setHash = function () {
+  settingHash = true
   var schema = '#/{questions}/{rejected}/{answered}/{search}/{tags}'
   var hash = schema.replace(/\{(.+?)\}/g, function ($0, $1) {
     if (app.queryBuilder.hasOwnProperty($1)) {
@@ -37,9 +38,9 @@ var setHash = function () {
       return '-'
     }
   })
-  console.log('hashes', hash)
-  settingHash = true
   window.location.hash = hash
+  console.log('hashes', hash)
+  settingHash = false
 }
 
 var parseHash = function () {
@@ -583,7 +584,7 @@ var app = new Vue({
     },
     logout: function() {
       db.destroy().then(function(data) {
-        window.location = 'index.html';
+        app.mode = 'loggedout'
       })
     },
     doSearch: function(callback) {
@@ -802,7 +803,7 @@ db.get('_local/user').then(function(data) {
 
 }).catch(function(e) {
   // if there's no _local/user document, you're not logged in
-  window.location = 'index.html';
+  app.mode = 'loggedout'
 });
 
 $(document).ready(function() {
