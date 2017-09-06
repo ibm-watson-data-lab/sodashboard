@@ -33,6 +33,10 @@ app.use(bodyParser.urlencoded());
 // static files
 app.use(express.static('public'));
 
+app.get('/home.html', function (req, res) {
+  res.redirect('/')
+})
+
 // slack /soduty handler login handler
 // receives webhook from Slack an creates a token in a Cloudant database
 // the Slack user then follows the link they are given to redeem the token
