@@ -11,5 +11,5 @@ deploy:
   script: ./deploy.sh
   on:
     repo: ibm-watson-data-lab/sodashboard
-    branch: travis_test
+    branch: master
   skip_cleanup: true
