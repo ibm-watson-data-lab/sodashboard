@@ -134,5 +134,4 @@ When an a user affirms that they have answered a question, the following top-lev
 
 ## Contributing
 
-To set up the Stack Overflow Dashboard on a local machine, try [these instructions on the wiki](https://github.com/ibm-watson-data-lab/sodashboard/wiki/Developers-Guide)
-
+To set up the Stack Overflow Dashboard on a local machine, try [these instructions on the wiki](https://github.com/ibm-watson-data-lab/sodashboard/wiki/Developers-Guide). For deploying your own version of this tool, there is documentation for the [setup using TravisCI](https://github.com/ibm-watson-data-lab/sodashboard/wiki/TravisCI-setup).
