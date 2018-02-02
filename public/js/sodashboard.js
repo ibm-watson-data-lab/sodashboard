@@ -367,6 +367,8 @@ var app = new Vue({
                 'user_id': row.doc.user_id,
                 'user_name': row.doc.user_name
               }
+            }).sort(function (a, b) {
+              return a.user_name.localeCompare((b.user_name))
             })
           }
         })
