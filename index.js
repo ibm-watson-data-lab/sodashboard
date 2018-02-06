@@ -69,6 +69,7 @@ app.post('/slack', function (req, res) {
 // redeem token handler
 app.post('/redeem/:id', function (req, res) {
   var user = null;
+  var newUser = null;
 
   // fetch the token from the database
   db.tokens.get(req.params.id).then(function(data) {
@@ -94,7 +95,18 @@ app.post('/redeem/:id', function (req, res) {
 
     // create a new Cloudant apikey/password 
     return db.so.createUser(['_reader','_writer','_replicator']);
-  }).then(function(newUser) {
+  }).then(function(data) {
+    newUser = data;
+
+    // read the _security document from the events database
+    return db.events.get('_security');
+  }).then(function(data) {
+
+    // ensure that the new user has the correct permissions on this database too
+    data['_id'] = '_security';
+    data.cloudant[newUser.key] = ['_reader','_writer','_replicator'];
+    return db.events.update(data);
+  }).then(function(data) {
     
     // pass the Cloudant URL, username, password and user data back to the caller
     return res.send({ url: db.url, username: newUser.key, password: newUser.password, ok: true, user: user });
