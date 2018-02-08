@@ -1,4 +1,5 @@
 var db = new PouchDB('sodashboard');
+var eventsdb = new PouchDB('events');
 
 var locateDoc = function(id) {
   for(var i in app.docs) {
@@ -509,8 +510,40 @@ var app = new Vue({
           }
           app.notify('Question ' + doc._id + (doc.owner ? ' reassigned' : ' unassigned'));
           $('#assignUserBtn').text('Assign')
+          
+          // create an event in our local events database
+          var e = {
+            type: 'assigned',
+            assigned_by: app.loggedinuser.user_id,
+            assigned_by_name: app.loggedinuser.user_name,
+            assigned_at: new Date().toISOString(),
+            assigned_to: doc.owner,
+            assigned_to_name: app.userlist[doc.owner],
+            notified: false
+          };
+          return eventsdb.post(e);
+
+        }).then(function(data) {
+          app.syncEvents();
         });
       }
+    },
+    syncEvents: function() {
+      // read the connection details from a local document
+      db.get('_local/user').then(function(data) {
+        
+        // insert username & password into the URL
+        var auth = data.username + ':' + data.password;
+        var url = data.url.replace(/\/\//, '//' + auth + '@');
+
+        // substitute the database name for 'events'
+        url = url.replace(/\/[a-z0-9]+$/,'/events')
+
+        // sync with Cloudant events database - client --> server, one-off
+        eventsdb.replicate.to(url).on('complete', function(info) {
+          console.log('events sync complete', info);
+        }).on('error', console.error);
+      });
     },
     reject: function(id) {
       // called when someone calls the reject button
