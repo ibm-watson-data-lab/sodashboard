@@ -25,8 +25,8 @@
   "dependencies": {
     "body-parser": "^1.17.1",
     "cfenv": "^1.0.4",
-    "express": "^4.15.2",
-    "silverlining": "^1.24.7"
+    "cloudant-quickstart": "^1.25.1",
+    "express": "^4.15.2"
   },
   "engines": {
     "node": ">=4.2.0"
