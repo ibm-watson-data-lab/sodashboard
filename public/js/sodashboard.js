@@ -519,7 +519,9 @@ var app = new Vue({
             assigned_at: new Date().toISOString(),
             assigned_to: doc.owner,
             assigned_to_name: app.userlist[doc.owner],
-            notified: false
+            notified: false,
+            question_id:  doc._id,
+            title: doc.question.title
           };
           return eventsdb.post(e);
 
