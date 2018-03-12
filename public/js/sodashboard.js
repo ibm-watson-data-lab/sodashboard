@@ -16,7 +16,7 @@ var validateAssignment = function(sel, inp) {
   var uname = sel ? sel.options[sel.selectedIndex].text : '';
   if (uid === '' && app.doc.owner) {
     $('#assignUserBtn').prop('disabled', false).text('Unassign');
-  } else if (uname && uid && uname.length>1 && uid.length == 9) {
+  } else if (uname && uid && uname.length>1 && uid.length > 0 && uid !== 'OTHER') {
     $('#assignUserBtn').prop('disabled', false).text('Assign');
   } else {
     var other = inp ? $(inp).val() : $('#otherOwner').val();
