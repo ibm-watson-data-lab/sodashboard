@@ -310,7 +310,7 @@ var app = new Vue({
     profileEditor: function(obj) {
       settingHash = true
       app.queryBuilder.questions = ''
-      if (obj && !obj.clientX) { // make sure this isn't a MouseEvent 
+      if (false && obj && !obj.clientX) { // make sure this isn't a MouseEvent 
         window.location.hash = '#profile';
         app.profile = obj;
         app.mode = 'profile';
