@@ -369,8 +369,15 @@ var app = new Vue({
             app.taggedusers = resp.rows.map(function (row) {
               return {
                 'user_id': row.doc.user_id,
-                'user_name': row.doc.user_name
+                'user_name': row.doc.user_name,
+                'tags_count': row.doc.custom_tags.filter(function (tag) {
+                  return t.indexOf(tag) > -1
+                }).length
               }
+            }).sort(function (a, b) {
+              return a.tags_count === b.tags_count
+                ? a.user_name.localeCompare(b.user_name)
+                : a.tags_count < b.tags_count
             })
           }
         })

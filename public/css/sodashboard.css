@@ -168,6 +168,18 @@ body {
 .taggedusers a {
   cursor: pointer;
 }
+.taggedusers > a,
+.taggedusers > span {
+  float: right;
+}
 .taggedusers ul {
+  left: initial;
   padding: 5px 10px;
+  right: 0;
+  clear: both;
+}
+.taggedusers li > span {
+  color: #888888;
+  float: right;
+  font-weight: 300;
 }
