@@ -39,7 +39,9 @@ var setHash = function () {
       return '-'
     }
   })
-  window.location.hash = hash
+  if (window.location.hash.indexOf('#profile') === -1) {
+    window.location.hash = hash
+  }
   console.log('hashes', hash)
   settingHash = false
 }
@@ -310,7 +312,7 @@ var app = new Vue({
     profileEditor: function(obj) {
       settingHash = true
       app.queryBuilder.questions = ''
-      if (obj && !obj.clientX) { // make sure this isn't a MouseEvent 
+      if (obj && !('clientX' in obj)) { // make sure this isn't a MouseEvent 
         window.location.hash = '#profile';
         app.profile = obj;
         app.mode = 'profile';
@@ -334,6 +336,7 @@ var app = new Vue({
         // return to unassigned mode
         app.profile._rev = data.rev;
         app.queryBuilder.questions = 'unassigned'
+        window.location.hash = '#'
       });
     },
     findTaggedUsers: function () {
